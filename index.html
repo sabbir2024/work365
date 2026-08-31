@@ -1,44 +1,43 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
 
-<meta
- name="viewport"
- content="width=device-width, initial-scale=1.0"
-/>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
   <title>Work365</title>
 
   <!-- Tailwind CSS -->
-
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- React -->
-
   <script
     src="https://unpkg.com/react@18/umd/react.development.js"
     crossorigin
   ></script>
 
   <!-- React DOM -->
-
   <script
     src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
     crossorigin
   ></script>
 
   <!-- React Router DOM -->
-
   <script
-    src="https://unpkg.com/react-router-dom@6/umd/react-router-dom.development.js"
+    src="https://unpkg.com/react-router-dom@6.28.0/dist/umd/react-router-dom.development.js"
     crossorigin
   ></script>
 
-  <!-- Babel -->
+  <!-- SheetJS / XLSX -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
+  ></script>
 
+  <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
@@ -46,9 +45,16 @@
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
+      padding: 0;
+      min-height: 100%;
       font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f5f5f5;
     }
 
     .page-container {
@@ -66,20 +72,399 @@
         transform: translateY(0);
       }
     }
-  </style>
 
+    /* ================================
+       EXCEL EDITING
+    ================================= */
+
+    .main-area {
+      padding: 20px;
+    }
+
+    .filter-area {
+      background: #fff;
+      border-radius: 8px;
+      padding: 18px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .report-name-field {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .report-name-field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .report-name-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .report-name-input:focus {
+      border-color: #007bff;
+    }
+
+    .top-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 5px;
+      padding: 9px 13px;
+      background: #007bff;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.92);
+    }
+
+    .btn.clear {
+      background: #6c757d;
+    }
+
+    .btn.green {
+      background: #28a745;
+    }
+
+    .btn.orange {
+      background: #fd7e14;
+    }
+
+    .btn.purple {
+      background: #6f42c1;
+    }
+
+    .btn.save {
+      background: #198754;
+    }
+
+    .btn.print-btn {
+      background: #343a40;
+    }
+
+    .upload-area {
+      margin-top: 18px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .upload-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .upload-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .upload-title {
+      width: 90px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .upload-title.second {
+      color: #555;
+    }
+
+    .excel-input {
+      font-size: 13px;
+    }
+
+    .file-name {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+      width: 240px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .global-search {
+      width: 100%;
+      padding: 9px 10px 9px 32px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .global-search:focus {
+      border-color: #007bff;
+    }
+
+    .record-info {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .table-wrapper {
+      background: white;
+      border-radius: 8px;
+      overflow: auto;
+      min-height: 300px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    #dataTable {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+
+    #dataTable th,
+    #dataTable td {
+      border: 1px solid #ddd;
+      padding: 9px 10px;
+      font-size: 13px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    #dataTable thead tr:first-child th {
+      background: #343a40;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .filter-header th {
+      background: #f1f1f1;
+      position: sticky;
+      top: 36px;
+      z-index: 2;
+    }
+
+    .column-filter {
+      width: 100%;
+      min-width: 100px;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    #dataTable tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    #dataTable tbody tr:hover {
+      background: #eef7ff;
+    }
+
+    .empty-state {
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: #777;
+    }
+
+    .empty-icon {
+      font-size: 45px;
+      margin-bottom: 10px;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .empty-text {
+      margin-top: 5px;
+      font-size: 13px;
+    }
+
+    /* ================================
+       EXCEL LOCK
+    ================================= */
+
+    .ui-lock-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(20, 25, 30, 0.45);
+      backdrop-filter: blur(3px);
+    }
+
+    .lock-box {
+      width: min(420px, calc(100% - 30px));
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+    }
+
+    .lock-header {
+      background: linear-gradient(
+        135deg,
+        #319a82,
+        #42a85c,
+        #82c83b
+      );
+      color: white;
+      text-align: center;
+      padding: 25px 20px;
+    }
+
+    .lock-icon {
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .lock-title {
+      font-size: 21px;
+      font-weight: bold;
+    }
+
+    .lock-subtitle {
+      margin-top: 7px;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .lock-body {
+      padding: 20px;
+    }
+
+    .lock-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .lock-password-wrap {
+      display: flex;
+      gap: 8px;
+    }
+
+    .lock-password {
+      min-width: 0;
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .lock-password:focus {
+      border-color: #007bff;
+    }
+
+    .lock-button {
+      border: 0;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+      padding: 10px 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .lock-error {
+      min-height: 20px;
+      margin-top: 8px;
+      color: #dc3545;
+      font-size: 13px;
+    }
+
+    .lock-footer {
+      border-top: 1px solid #eee;
+      padding: 12px;
+      text-align: center;
+      color: #777;
+      font-size: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .main-area {
+        padding: 10px;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .toolbar-left {
+        width: 100%;
+      }
+
+      .toolbar-left .btn {
+        flex: 1;
+      }
+
+      .lock-password-wrap {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 
-<body class="bg-[#f5f5f5]">
+<body>
 
   <div id="root"></div>
 
-  <!-- =========================================
-       COMPONENTS
-       IMPORTANT:
-       These files MUST NOT contain import/export
-  ========================================== -->
-
+  <!-- Components -->
   <script
     type="text/babel"
     src="./components/ExcelEditing.jsx"
@@ -95,26 +480,20 @@
     src="./components/VehicleSummary.jsx"
   ></script>
 
-  <!-- =========================================
-       LAYOUT
-  ========================================== -->
-
+  <!-- Layout -->
   <script
     type="text/babel"
     src="./Layout.jsx"
   ></script>
 
-  <!-- =========================================
-       MAIN APP
-  ========================================== -->
-
+  <!-- Main App -->
   <script type="text/babel">
 
     const {
       BrowserRouter,
       Routes,
       Route
-    } = ReactRouterDOM;
+    } = window.ReactRouterDOM;
 
     function App() {
       return (
@@ -153,7 +532,9 @@
     }
 
     ReactDOM
-      .createRoot(document.getElementById("root"))
+      .createRoot(
+        document.getElementById("root")
+      )
       .render(<App />);
 
   </script>
