@@ -1,43 +1,49 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+<meta
+ name="viewport"
+ content="width=device-width, initial-scale=1.0"
+/>
 
   <title>Work365</title>
 
   <!-- Tailwind CSS -->
+
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- React -->
+
   <script
     src="https://unpkg.com/react@18/umd/react.development.js"
     crossorigin
   ></script>
 
   <!-- React DOM -->
+
   <script
     src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
     crossorigin
   ></script>
 
   <!-- React Router DOM -->
+
   <script
-    src="https://unpkg.com/react-router-dom@6.28.0/dist/umd/react-router-dom.development.js"
-    crossorigin
+    src="https://unpkg.com/react-router-dom@6.28.2/dist/umd/react-router-dom.development.js"
   ></script>
 
   <!-- SheetJS / XLSX -->
+
   <script
     src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
   ></script>
 
   <!-- Babel -->
+
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
@@ -50,11 +56,18 @@
       margin: 0;
       padding: 0;
       min-height: 100%;
-      font-family: Arial, sans-serif;
     }
 
     body {
+      font-family: Arial, sans-serif;
       background: #f5f5f5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font-family: inherit;
     }
 
     .page-container {
@@ -73,20 +86,20 @@
       }
     }
 
-    /* ================================
+    /* =========================================
        EXCEL EDITING
-    ================================= */
+    ========================================= */
 
     .main-area {
       padding: 20px;
     }
 
     .filter-area {
-      background: #fff;
-      border-radius: 8px;
+      background: #ffffff;
+      border-radius: 10px;
       padding: 18px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 15px;
     }
 
     .filter-row {
@@ -104,9 +117,9 @@
 
     .report-name-field label {
       display: block;
-      margin-bottom: 6px;
       font-size: 13px;
       font-weight: bold;
+      margin-bottom: 6px;
     }
 
     .report-name-input {
@@ -114,11 +127,12 @@
       padding: 10px 12px;
       border: 1px solid #ccc;
       border-radius: 5px;
-      font-size: 14px;
       outline: none;
     }
 
-    .report-name-input:focus {
+    .report-name-input:focus,
+    .global-search:focus,
+    .column-filter:focus {
       border-color: #007bff;
     }
 
@@ -130,9 +144,9 @@
     .btn {
       border: 0;
       border-radius: 5px;
-      padding: 9px 13px;
       background: #007bff;
       color: white;
+      padding: 9px 13px;
       font-size: 13px;
       font-weight: bold;
       cursor: pointer;
@@ -141,7 +155,7 @@
 
     .btn:hover {
       transform: translateY(-1px);
-      filter: brightness(0.92);
+      opacity: 0.92;
     }
 
     .btn.clear {
@@ -171,13 +185,13 @@
     .upload-area {
       margin-top: 18px;
       padding-top: 15px;
-      border-top: 1px solid #eee;
+      border-top: 1px solid #e5e5e5;
     }
 
     .upload-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 10px;
       flex-wrap: wrap;
     }
@@ -187,7 +201,7 @@
     }
 
     .upload-title {
-      width: 90px;
+      width: 80px;
       font-size: 13px;
       font-weight: bold;
     }
@@ -198,20 +212,26 @@
 
     .excel-input {
       font-size: 13px;
+      max-width: 300px;
     }
 
     .file-name {
+      font-size: 12px;
       color: #666;
-      font-size: 13px;
+      word-break: break-all;
     }
 
     .table-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
       margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
     .toolbar-left {
@@ -222,28 +242,24 @@
     }
 
     .search-box {
-      position: relative;
-      width: 240px;
+      display: flex;
+      align-items: center;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #fff;
+      overflow: hidden;
     }
 
     .search-icon {
-      position: absolute;
-      left: 9px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
+      padding: 0 8px;
+      font-size: 13px;
     }
 
     .global-search {
-      width: 100%;
-      padding: 9px 10px 9px 32px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      outline: none;
-    }
-
-    .global-search:focus {
-      border-color: #007bff;
+      border: 0;
+      outline: 0;
+      padding: 9px 10px 9px 0;
+      min-width: 220px;
     }
 
     .record-info {
@@ -252,11 +268,11 @@
     }
 
     .table-wrapper {
-      background: white;
-      border-radius: 8px;
+      width: 100%;
       overflow: auto;
-      min-height: 300px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
     #dataTable {
@@ -269,23 +285,24 @@
     #dataTable td {
       border: 1px solid #ddd;
       padding: 9px 10px;
-      font-size: 13px;
       text-align: left;
+      font-size: 13px;
       white-space: nowrap;
     }
 
-    #dataTable thead tr:first-child th {
-      background: #343a40;
-      color: white;
+    #dataTable thead th {
+      background: #252a2d;
+      color: #fff;
+      font-weight: bold;
       position: sticky;
       top: 0;
       z-index: 2;
     }
 
-    .filter-header th {
-      background: #f1f1f1;
+    #dataTable .filter-header th {
+      background: #f1f3f5;
       position: sticky;
-      top: 36px;
+      top: 38px;
       z-index: 2;
     }
 
@@ -296,44 +313,46 @@
       border: 1px solid #ccc;
       border-radius: 4px;
       outline: none;
+      color: #222;
     }
 
     #dataTable tbody tr:nth-child(even) {
-      background: #fafafa;
+      background: #f8f9fa;
     }
 
     #dataTable tbody tr:hover {
-      background: #eef7ff;
+      background: #eef6ff;
+    }
+
+    #dataTable td {
+      cursor: default;
     }
 
     .empty-state {
-      min-height: 300px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
+      padding: 70px 20px;
+      text-align: center;
       color: #777;
     }
 
     .empty-icon {
-      font-size: 45px;
+      font-size: 50px;
       margin-bottom: 10px;
     }
 
     .empty-title {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: bold;
       color: #444;
+      margin-bottom: 5px;
     }
 
     .empty-text {
-      margin-top: 5px;
       font-size: 13px;
     }
 
-    /* ================================
-       EXCEL LOCK
-    ================================= */
+    /* =========================================
+       LOCK SCREEN
+    ========================================= */
 
     .ui-lock-overlay {
       position: fixed;
@@ -342,28 +361,34 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(20, 25, 30, 0.45);
-      backdrop-filter: blur(3px);
+      padding: 20px;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(245, 247, 250, 0.98),
+          rgba(232, 237, 243, 0.98)
+        );
     }
 
     .lock-box {
-      width: min(420px, calc(100% - 30px));
-      background: white;
-      border-radius: 12px;
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      border-radius: 14px;
       overflow: hidden;
-      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.18);
     }
 
     .lock-header {
+      padding: 28px 25px 20px;
+      text-align: center;
       background: linear-gradient(
         135deg,
         #319a82,
         #42a85c,
         #82c83b
       );
-      color: white;
-      text-align: center;
-      padding: 25px 20px;
+      color: #fff;
     }
 
     .lock-icon {
@@ -372,7 +397,7 @@
     }
 
     .lock-title {
-      font-size: 21px;
+      font-size: 22px;
       font-weight: bold;
     }
 
@@ -383,12 +408,12 @@
     }
 
     .lock-body {
-      padding: 20px;
+      padding: 25px;
     }
 
     .lock-label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 7px;
       font-size: 13px;
       font-weight: bold;
     }
@@ -399,11 +424,11 @@
     }
 
     .lock-password {
-      min-width: 0;
       flex: 1;
-      padding: 10px;
+      min-width: 0;
       border: 1px solid #ccc;
       border-radius: 5px;
+      padding: 11px;
       outline: none;
     }
 
@@ -415,23 +440,23 @@
       border: 0;
       border-radius: 5px;
       background: #007bff;
-      color: white;
-      padding: 10px 16px;
+      color: #fff;
+      padding: 0 16px;
       font-weight: bold;
       cursor: pointer;
     }
 
     .lock-error {
-      min-height: 20px;
+      min-height: 18px;
       margin-top: 8px;
+      font-size: 12px;
       color: #dc3545;
-      font-size: 13px;
     }
 
     .lock-footer {
-      border-top: 1px solid #eee;
-      padding: 12px;
+      padding: 13px 20px;
       text-align: center;
+      border-top: 1px solid #eee;
       color: #777;
       font-size: 12px;
     }
@@ -441,30 +466,34 @@
         padding: 10px;
       }
 
-      .search-box {
-        width: 100%;
-      }
-
-      .toolbar-left {
-        width: 100%;
-      }
-
-      .toolbar-left .btn {
-        flex: 1;
+      .global-search {
+        min-width: 180px;
       }
 
       .lock-password-wrap {
         flex-direction: column;
       }
+
+      .lock-button {
+        min-height: 42px;
+      }
     }
   </style>
+
 </head>
 
 <body>
 
   <div id="root"></div>
 
-  <!-- Components -->
+  <!-- =========================================
+       COMPONENTS
+       IMPORTANT:
+       These files MUST NOT contain import/export
+       statements because they are loaded by Babel
+       as normal scripts.
+  ========================================== -->
+
   <script
     type="text/babel"
     src="./components/ExcelEditing.jsx"
@@ -480,14 +509,33 @@
     src="./components/VehicleSummary.jsx"
   ></script>
 
-  <!-- Layout -->
+  <!-- =========================================
+       LAYOUT
+  ========================================== -->
+
   <script
     type="text/babel"
     src="./Layout.jsx"
   ></script>
 
-  <!-- Main App -->
+  <!-- =========================================
+       APP
+  ========================================== -->
+
   <script type="text/babel">
+
+    /*
+      React Router UMD normally exposes:
+      window.ReactRouterDOM
+
+      This check makes debugging easier.
+    */
+
+    if (!window.ReactRouterDOM) {
+      throw new Error(
+        "React Router DOM failed to load."
+      );
+    }
 
     const {
       BrowserRouter,
@@ -495,7 +543,9 @@
       Route
     } = window.ReactRouterDOM;
 
+
     function App() {
+
       return (
         <BrowserRouter>
 
@@ -503,20 +553,28 @@
 
             <Route element={<Layout />}>
 
+              {/* Home */}
+
               <Route
                 path="/"
                 element={<ExcelEditing />}
               />
+
+              {/* Excel Editing */}
 
               <Route
                 path="/excel-editing"
                 element={<ExcelEditing />}
               />
 
+              {/* OGP Print */}
+
               <Route
                 path="/ogp-print"
                 element={<OGPPrint />}
               />
+
+              {/* Vehicle Summary */}
 
               <Route
                 path="/vehicle-summary"
@@ -531,10 +589,20 @@
       );
     }
 
+
+    const rootElement =
+      document.getElementById("root");
+
+
+    if (!rootElement) {
+      throw new Error(
+        "Root element #root was not found."
+      );
+    }
+
+
     ReactDOM
-      .createRoot(
-        document.getElementById("root")
-      )
+      .createRoot(rootElement)
       .render(<App />);
 
   </script>
