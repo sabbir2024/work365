@@ -1,23 +1,23 @@
 function Layout() {
 
+  const {
+    Link,
+    Outlet
+  } = window.ReactRouterDOM;
+
   const [dateTime, setDateTime] = React.useState(
     new Date()
   );
 
-
   React.useEffect(() => {
 
     const timer = setInterval(() => {
-
       setDateTime(new Date());
-
     }, 1000);
-
 
     return () => clearInterval(timer);
 
   }, []);
-
 
   function formatDateTime(date) {
 
@@ -25,58 +25,42 @@ function Layout() {
       date.getDate()
     ).padStart(2, "0");
 
-
     const month = String(
       date.getMonth() + 1
     ).padStart(2, "0");
 
-
     const year = date.getFullYear();
 
-
     let hours = date.getHours();
-
 
     const minutes = String(
       date.getMinutes()
     ).padStart(2, "0");
 
-
     const seconds = String(
       date.getSeconds()
     ).padStart(2, "0");
-
 
     const ampm =
       hours >= 12
         ? "pm"
         : "am";
 
-
     hours =
       hours % 12 || 12;
-
 
     hours = String(
       hours
     ).padStart(2, "0");
 
-
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds} ${ampm}`;
   }
-
 
   return (
 
     <div className="min-h-screen bg-[#f5f5f5]">
 
-      {/* =========================
-          HEADER
-      ========================== */}
-
       <header className="relative z-10">
-
-        {/* Top Header */}
 
         <div
           className="
@@ -84,6 +68,7 @@ function Layout() {
             min-h-[50px]
             items-center
             justify-between
+            gap-3
             px-4
             text-white
             bg-gradient-to-r
@@ -93,15 +78,14 @@ function Layout() {
           "
         >
 
-          {/* Logo + Name */}
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
 
             <div
               className="
                 flex
                 h-[30px]
                 w-[30px]
+                shrink-0
                 items-center
                 justify-center
                 rounded-full
@@ -115,47 +99,32 @@ function Layout() {
               SG
             </div>
 
-
-            <div className="text-[18px] font-bold">
+            <div className="truncate text-[18px] font-bold">
               Excel Editing - SH Group
             </div>
 
           </div>
 
-
-          {/* Date Time */}
-
           <div
             className="
               hidden
+              shrink-0
               text-[14px]
               font-bold
-              sm:block
+              md:block
             "
           >
             {formatDateTime(dateTime)}
           </div>
 
-
-          {/* Back */}
-
-          <div className="text-[14px] font-bold">
-
-            <a
-              href="/"
-              className="hover:underline"
-            >
-              → Back
-            </a>
-
-          </div>
+          <Link
+            to="/"
+            className="shrink-0 text-[14px] font-bold text-white no-underline hover:underline"
+          >
+            → Back
+          </Link>
 
         </div>
-
-
-        {/* =========================
-            NAVIGATION
-        ========================== */}
 
         <nav
           className="
@@ -168,8 +137,6 @@ function Layout() {
             bg-[#252a2d]
           "
         >
-
-          {/* Excel Editing */}
 
           <Link
             to="/excel-editing"
@@ -191,9 +158,6 @@ function Layout() {
             Excel Editing
           </Link>
 
-
-          {/* OGP Print */}
-
           <Link
             to="/ogp-print"
             className="
@@ -213,9 +177,6 @@ function Layout() {
           >
             OGP Print
           </Link>
-
-
-          {/* Vehicle Summary */}
 
           <Link
             to="/vehicle-summary"
@@ -241,15 +202,8 @@ function Layout() {
 
       </header>
 
-
-      {/* =========================
-          OUTLET
-      ========================== */}
-
       <main className="page-container">
-
         <Outlet />
-
       </main>
 
     </div>
