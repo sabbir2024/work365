@@ -1,35 +1,44 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+<meta
+ name="viewport"
+ content="width=device-width, initial-scale=1.0"
+/>
 
   <title>Work365</title>
 
   <!-- Tailwind CSS -->
+
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- React -->
+
   <script
     src="https://unpkg.com/react@18/umd/react.development.js"
     crossorigin
   ></script>
 
   <!-- React DOM -->
+
   <script
     src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
     crossorigin
   ></script>
 
-  <!-- React Router -->
-  <script src="https://unpkg.com/react-router-dom@6/umd/react-router-dom.development.js"></script>
+  <!-- React Router DOM -->
+
+  <script
+    src="https://unpkg.com/react-router-dom@6/umd/react-router-dom.development.js"
+    crossorigin
+  ></script>
 
   <!-- Babel -->
+
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
@@ -58,14 +67,18 @@
       }
     }
   </style>
+
 </head>
 
 <body class="bg-[#f5f5f5]">
 
   <div id="root"></div>
 
-
-  <!-- Components -->
+  <!-- =========================================
+       COMPONENTS
+       IMPORTANT:
+       These files MUST NOT contain import/export
+  ========================================== -->
 
   <script
     type="text/babel"
@@ -82,30 +95,28 @@
     src="./components/VehicleSummary.jsx"
   ></script>
 
-
-  <!-- Layout -->
+  <!-- =========================================
+       LAYOUT
+  ========================================== -->
 
   <script
     type="text/babel"
     src="./Layout.jsx"
   ></script>
 
-
-  <!-- Main React App -->
+  <!-- =========================================
+       MAIN APP
+  ========================================== -->
 
   <script type="text/babel">
 
     const {
       BrowserRouter,
       Routes,
-      Route,
-      Outlet,
-      Link
+      Route
     } = ReactRouterDOM;
 
-
     function App() {
-
       return (
         <BrowserRouter>
 
@@ -113,31 +124,20 @@
 
             <Route element={<Layout />}>
 
-              {/* Default Route */}
-
               <Route
                 path="/"
                 element={<ExcelEditing />}
               />
-
-
-              {/* Excel Editing */}
 
               <Route
                 path="/excel-editing"
                 element={<ExcelEditing />}
               />
 
-
-              {/* OGP Print */}
-
               <Route
                 path="/ogp-print"
                 element={<OGPPrint />}
               />
-
-
-              {/* Vehicle Summary */}
 
               <Route
                 path="/vehicle-summary"
@@ -150,14 +150,10 @@
 
         </BrowserRouter>
       );
-
     }
 
-
     ReactDOM
-      .createRoot(
-        document.getElementById("root")
-      )
+      .createRoot(document.getElementById("root"))
       .render(<App />);
 
   </script>
