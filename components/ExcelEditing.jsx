@@ -1,30 +1,30 @@
 function ExcelEditing() {
 
-  const {
-    useState
-  } = React;
+  const [locked, setLocked] = React.useState(true);
+  const [password, setPassword] = React.useState("");
+  const [error, setError] = React.useState("");
 
-  const [locked, setLocked] = useState(true);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const [reportName, setReportName] = useState(
+  const [reportName, setReportName] = React.useState(
     "DBL Delivery Report"
   );
 
-  const [fileName, setFileName] = useState(
+  const [fileName, setFileName] = React.useState(
     "No file selected"
   );
 
-  const [secondFileName, setSecondFileName] = useState(
+  const [secondFileName, setSecondFileName] = React.useState(
     "Optional"
   );
 
-  const [columns, setColumns] = useState([]);
-  const [rows, setRows] = useState([]);
-  const [search, setSearch] = useState("");
+  const [columns, setColumns] = React.useState([]);
+  const [rows, setRows] = React.useState([]);
+  const [search, setSearch] = React.useState("");
 
-  const unlockUI = () => {
+  /* ================================
+     UNLOCK
+  ================================= */
+
+  function unlockUI() {
 
     if (password === "1234") {
 
@@ -38,40 +38,144 @@ function ExcelEditing() {
       setPassword("");
 
     }
-  };
+  }
 
-  const handleExcelUpload = (event) => {
+  /* ================================
+     BUILD HEADERS
+  ================================= */
 
-    const file = event.target.files?.[0];
+  function buildHeaders(headerRow) {
 
-    if (!file) return;
+    const result = [];
+    const used = {};
+
+    headerRow.forEach(function (header, index) {
+
+      let name = String(
+        header == null ? "" : header
+      ).trim();
+
+      if (!name) {
+        name = "Column " + (index + 1);
+      }
+
+      const key = name.toLowerCase();
+
+      if (used[key]) {
+
+        used[key] = used[key] + 1;
+
+        name =
+          name +
+          " " +
+          used[key];
+
+      } else {
+
+        used[key] = 1;
+
+      }
+
+      result.push(name);
+
+    });
+
+    return result;
+  }
+
+  /* ================================
+     FORMAT EXCEL VALUE
+  ================================= */
+
+  function formatExcelValue(value) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return "";
+    }
+
+    if (
+      value instanceof Date &&
+      !isNaN(value.getTime())
+    ) {
+
+      return (
+        String(
+          value.getDate()
+        ).padStart(2, "0") +
+        "-" +
+        String(
+          value.getMonth() + 1
+        ).padStart(2, "0") +
+        "-" +
+        value.getFullYear()
+      );
+
+    }
+
+    return String(value).trim();
+  }
+
+  /* ================================
+     EXCEL UPLOAD
+  ================================= */
+
+  function handleExcelUpload(event) {
+
+    const file =
+      event.target.files &&
+      event.target.files[0];
+
+    if (!file) {
+      return;
+    }
 
     setFileName(file.name);
 
-    const reader = new FileReader();
+    const reader =
+      new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = function (event) {
 
       try {
 
-        const XLSX = window.XLSX;
+        const XLSX =
+          window.XLSX;
 
         if (!XLSX) {
+
           alert(
             "XLSX library is not loaded."
           );
+
           return;
         }
 
-        const workbook = XLSX.read(
-          new Uint8Array(
-            e.target.result
-          ),
-          {
-            type: "array",
-            cellDates: true
-          }
-        );
+        const arrayBuffer =
+          event.target.result;
+
+        const workbook =
+          XLSX.read(
+            new Uint8Array(arrayBuffer),
+            {
+              type: "array",
+              cellDates: true
+            }
+          );
+
+        if (
+          !workbook.SheetNames ||
+          workbook.SheetNames.length === 0
+        ) {
+
+          alert(
+            "No worksheet found."
+          );
+
+          return;
+        }
 
         const sheet =
           workbook.Sheets[
@@ -88,7 +192,10 @@ function ExcelEditing() {
             }
           );
 
-        if (!data.length) {
+        if (
+          !data ||
+          data.length === 0
+        ) {
 
           alert(
             "Excel file is empty."
@@ -103,30 +210,40 @@ function ExcelEditing() {
         const excelRows =
           data
             .slice(1)
-            .filter((row) =>
-              row.some(
-                (cell) =>
-                  String(
-                    cell ?? ""
-                  ).trim() !== ""
-              )
-            )
-            .map((row) => {
+            .filter(function (row) {
+
+              return row.some(
+                function (cell) {
+
+                  return String(
+                    cell == null
+                      ? ""
+                      : cell
+                  ).trim() !== "";
+
+                }
+              );
+
+            })
+            .map(function (row) {
 
               const obj = {};
 
               headers.forEach(
-                (header, index) => {
+                function (header, index) {
 
                   obj[header] =
                     formatExcelValue(
-                      row[index] ?? ""
+                      row[index] == null
+                        ? ""
+                        : row[index]
                     );
 
                 }
               );
 
               return obj;
+
             });
 
         setColumns(headers);
@@ -134,100 +251,40 @@ function ExcelEditing() {
 
       } catch (err) {
 
-        console.error(err);
+        console.error(
+          "Excel Error:",
+          err
+        );
 
         alert(
           "Excel file read করা যায়নি.\n\n" +
-          err.message
+          (
+            err &&
+            err.message
+              ? err.message
+              : String(err)
+          )
         );
       }
     };
 
-    reader.readAsArrayBuffer(file);
-  };
+    reader.onerror = function () {
 
-  const buildHeaders = (
-    headerRow
-  ) => {
-
-    const result = [];
-    const used = {};
-
-    headerRow.forEach(
-      (header, index) => {
-
-        let name =
-          String(
-            header ?? ""
-          ).trim();
-
-        if (!name) {
-          name =
-            `Column ${index + 1}`;
-        }
-
-        const key =
-          name.toLowerCase();
-
-        if (used[key]) {
-
-          used[key]++;
-
-          name =
-            `${name} ${used[key]}`;
-
-        } else {
-
-          used[key] = 1;
-
-        }
-
-        result.push(name);
-
-      }
-    );
-
-    return result;
-  };
-
-  const formatExcelValue = (
-    value
-  ) => {
-
-    if (
-      value === null ||
-      value === undefined
-    ) {
-      return "";
-    }
-
-    if (
-      value instanceof Date &&
-      !isNaN(
-        value.getTime()
-      )
-    ) {
-
-      return (
-        String(
-          value.getDate()
-        ).padStart(2, "0") +
-        "-" +
-        String(
-          value.getMonth() + 1
-        ).padStart(2, "0") +
-        "-" +
-        value.getFullYear()
+      alert(
+        "File read করা যায়নি."
       );
-    }
 
-    return String(
-      value
-    ).trim();
-  };
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  /* ================================
+     SEARCH
+  ================================= */
 
   const filteredRows =
-    rows.filter((row) => {
+    rows.filter(function (row) {
 
       if (!search.trim()) {
         return true;
@@ -235,38 +292,58 @@ function ExcelEditing() {
 
       const text =
         columns
-          .map((column) =>
-            String(
-              row[column] ?? ""
-            ).toLowerCase()
-          )
+          .map(function (column) {
+
+            return String(
+              row[column] == null
+                ? ""
+                : row[column]
+            ).toLowerCase();
+
+          })
           .join(" ");
 
       return text.includes(
         search.toLowerCase()
       );
+
     });
 
-  const editCell = (
+  /* ================================
+     EDIT CELL
+  ================================= */
+
+  function editCell(
     rowIndex,
     column,
     value
-  ) => {
+  ) {
 
-    setRows((previous) =>
-      previous.map(
-        (row, index) =>
-          index === rowIndex
-            ? {
-                ...row,
-                [column]: value
-              }
-            : row
-      )
-    );
-  };
+    setRows(function (previous) {
 
-  const saveExcel = () => {
+      return previous.map(
+        function (row, index) {
+
+          if (index !== rowIndex) {
+            return row;
+          }
+
+          return {
+            ...row,
+            [column]: value
+          };
+
+        }
+      );
+
+    });
+  }
+
+  /* ================================
+     SAVE EXCEL
+  ================================= */
+
+  function saveExcel() {
 
     if (!rows.length) {
 
@@ -277,7 +354,8 @@ function ExcelEditing() {
       return;
     }
 
-    const XLSX = window.XLSX;
+    const XLSX =
+      window.XLSX;
 
     if (!XLSX) {
 
@@ -289,15 +367,17 @@ function ExcelEditing() {
     }
 
     const exportData =
-      rows.map((row) => {
+      rows.map(function (row) {
 
         const obj = {};
 
         columns.forEach(
-          (column) => {
+          function (column) {
 
             obj[column] =
-              row[column] ?? "";
+              row[column] == null
+                ? ""
+                : row[column];
 
           }
         );
@@ -322,23 +402,48 @@ function ExcelEditing() {
       "Delivery Data"
     );
 
-    const safeName =
+    let safeName =
       reportName
         .replace(
           /[\\/:*?"<>|]/g,
           "_"
         )
-        .trim() ||
-      "DBL_Delivery_Report";
+        .trim();
+
+    if (!safeName) {
+      safeName =
+        "DBL_Delivery_Report";
+    }
 
     XLSX.writeFile(
       workbook,
-      `${safeName}.xlsx`
+      safeName + ".xlsx"
     );
-  };
+  }
+
+  /* ================================
+     CLEAR
+  ================================= */
+
+  function clearAll() {
+
+    setSearch("");
+
+    setReportName(
+      "DBL Delivery Report"
+    );
+  }
+
+  /* ================================
+     RENDER
+  ================================= */
 
   return (
     <>
+
+      {/* ============================
+          LOCK SCREEN
+      ============================= */}
 
       {locked && (
 
@@ -375,25 +480,31 @@ function ExcelEditing() {
                   className="lock-password"
                   placeholder="Enter password"
                   value={password}
-                  onChange={(e) => {
-                    setPassword(
-                      e.target.value
-                    );
-                    setError("");
-                  }}
-                  onKeyDown={(e) => {
-
-                    if (
-                      e.key === "Enter"
-                    ) {
-                      unlockUI();
-                    }
-
-                  }}
                   autoFocus
+                  onChange={
+                    function (event) {
+                      setPassword(
+                        event.target.value
+                      );
+                      setError("");
+                    }
+                  }
+                  onKeyDown={
+                    function (event) {
+
+                      if (
+                        event.key ===
+                        "Enter"
+                      ) {
+                        unlockUI();
+                      }
+
+                    }
+                  }
                 />
 
                 <button
+                  type="button"
                   className="lock-button"
                   onClick={unlockUI}
                 >
@@ -417,7 +528,15 @@ function ExcelEditing() {
         </div>
       )}
 
+      {/* ============================
+          MAIN
+      ============================= */}
+
       <div className="main-area">
+
+        {/* ==========================
+            FILTER
+        =========================== */}
 
         <div className="filter-area">
 
@@ -433,10 +552,12 @@ function ExcelEditing() {
                 type="text"
                 className="report-name-input"
                 value={reportName}
-                onChange={(e) =>
-                  setReportName(
-                    e.target.value
-                  )
+                onChange={
+                  function (event) {
+                    setReportName(
+                      event.target.value
+                    );
+                  }
                 }
               />
 
@@ -445,23 +566,19 @@ function ExcelEditing() {
             <div className="top-buttons">
 
               <button
+                type="button"
                 className="btn"
-                onClick={() => {}}
+                onClick={
+                  function () {}
+                }
               >
                 Apply 🔍
               </button>
 
               <button
+                type="button"
                 className="btn clear"
-                onClick={() => {
-
-                  setSearch("");
-
-                  setReportName(
-                    "DBL Delivery Report"
-                  );
-
-                }}
+                onClick={clearAll}
               >
                 Clear ↻
               </button>
@@ -469,6 +586,10 @@ function ExcelEditing() {
             </div>
 
           </div>
+
+          {/* ========================
+              UPLOAD
+          ========================= */}
 
           <div className="upload-area">
 
@@ -503,20 +624,23 @@ function ExcelEditing() {
                 type="file"
                 className="excel-input"
                 accept=".xlsx,.xls,.csv"
-                onChange={(e) => {
+                onChange={
+                  function (event) {
 
-                  const file =
-                    e.target.files?.[0];
+                    const file =
+                      event.target.files &&
+                      event.target.files[0];
 
-                  if (file) {
+                    if (file) {
 
-                    setSecondFileName(
-                      file.name
-                    );
+                      setSecondFileName(
+                        file.name
+                      );
+
+                    }
 
                   }
-
-                }}
+                }
               />
 
               <div className="file-name">
@@ -528,6 +652,10 @@ function ExcelEditing() {
           </div>
 
         </div>
+
+        {/* ==========================
+            TOOLBAR
+        =========================== */}
 
         <div className="table-toolbar">
 
@@ -544,37 +672,52 @@ function ExcelEditing() {
                 className="global-search"
                 placeholder="Search all columns..."
                 value={search}
-                onChange={(e) =>
-                  setSearch(
-                    e.target.value
-                  )
+                onChange={
+                  function (event) {
+                    setSearch(
+                      event.target.value
+                    );
+                  }
                 }
               />
 
             </div>
 
             <button
+              type="button"
               className="btn clear"
-              onClick={() =>
-                setSearch("")
+              onClick={
+                function () {
+                  setSearch("");
+                }
               }
             >
               Clear Filters
             </button>
 
-            <button className="btn green">
+            <button
+              type="button"
+              className="btn green"
+            >
               Columns ▾
             </button>
 
-            <button className="btn orange">
+            <button
+              type="button"
+              className="btn orange"
+            >
               Mapping ⚙
             </button>
 
-            <button className="btn purple">
+            <button
+              type="button"
+              className="btn purple"
+            >
               + Column
             </button>
 
             <button
+              type="button"
               className="btn save"
               onClick={saveExcel}
             >
@@ -582,9 +725,12 @@ function ExcelEditing() {
             </button>
 
             <button
+              type="button"
               className="btn print-btn"
-              onClick={() =>
-                window.print()
+              onClick={
+                function () {
+                  window.print();
+                }
               }
             >
               🖨 Print
@@ -605,6 +751,10 @@ function ExcelEditing() {
           </div>
 
         </div>
+
+        {/* ==========================
+            TABLE
+        =========================== */}
 
         <div className="table-wrapper">
 
@@ -635,13 +785,17 @@ function ExcelEditing() {
                 <tr>
 
                   {columns.map(
-                    (column) => (
+                    function (column) {
 
-                      <th key={column}>
-                        {column}
-                      </th>
+                      return (
+                        <th
+                          key={column}
+                        >
+                          {column}
+                        </th>
+                      );
 
-                    )
+                    }
                   )}
 
                 </tr>
@@ -649,18 +803,22 @@ function ExcelEditing() {
                 <tr className="filter-header">
 
                   {columns.map(
-                    (column) => (
+                    function (column) {
 
-                      <th key={column}>
+                      return (
+                        <th
+                          key={column}
+                        >
 
-                        <input
-                          className="column-filter"
-                          placeholder="Filter..."
-                        />
+                          <input
+                            className="column-filter"
+                            placeholder="Filter..."
+                          />
 
-                      </th>
+                        </th>
+                      );
 
-                    )
+                    }
                   )}
 
                 </tr>
@@ -670,52 +828,69 @@ function ExcelEditing() {
               <tbody>
 
                 {filteredRows.map(
-                  (row, rowIndex) => (
+                  function (
+                    row,
+                    filteredIndex
+                  ) {
 
-                    <tr
-                      key={rowIndex}
-                    >
+                    const realIndex =
+                      rows.indexOf(row);
 
-                      {columns.map(
-                        (column) => (
+                    return (
+                      <tr
+                        key={
+                          filteredIndex
+                        }
+                      >
 
-                          <td
-                            key={column}
-                            onDoubleClick={() => {
+                        {columns.map(
+                          function (column) {
 
-                              const value =
-                                prompt(
-                                  `Edit ${column}`,
-                                  row[column] ?? ""
-                                );
+                            return (
+                              <td
+                                key={column}
+                                onDoubleClick={
+                                  function () {
 
-                              if (
-                                value !==
-                                null
-                              ) {
+                                    const value =
+                                      window.prompt(
+                                        "Edit " +
+                                        column,
+                                        row[column] ||
+                                          ""
+                                      );
 
-                                editCell(
-                                  rows.indexOf(
-                                    row
-                                  ),
-                                  column,
-                                  value
-                                );
+                                    if (
+                                      value !==
+                                      null
+                                    ) {
 
-                              }
+                                      editCell(
+                                        realIndex,
+                                        column,
+                                        value
+                                      );
 
-                            }}
-                            title="Double-click to edit"
-                          >
-                            {row[column] ?? ""}
-                          </td>
+                                    }
 
-                        )
-                      )}
+                                  }
+                                }
+                                title="Double-click to edit"
+                              >
+                                {
+                                  row[column] ||
+                                  ""
+                                }
+                              </td>
+                            );
 
-                    </tr>
+                          }
+                        )}
 
-                  )
+                      </tr>
+                    );
+
+                  }
                 )}
 
               </tbody>
