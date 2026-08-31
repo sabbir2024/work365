@@ -1,4 +1,3 @@
-```jsx
 const OGPPrint = () => {
   const { useEffect, useRef, useState } = React;
 
@@ -915,4 +914,3 @@ function formatDateTime(date) {
 
   return `${day}-${month}-${year} ${hours}:${minutes}:${seconds} ${ampm}`;
 }
-```
