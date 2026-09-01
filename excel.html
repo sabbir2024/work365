@@ -1,0 +1,5146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Excel Editing</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f3f3f3;
+    color: #222;
+    font-size: 16px;
+    overflow: hidden;
+}
+
+/* ================= UI LOCK ================= */
+
+.ui-lock-overlay {
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(
+            135deg,
+            #1e5f67 0%,
+            #277d78 45%,
+            #4b963f 100%
+        );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+}
+
+.ui-lock-overlay.hidden {
+    display: none;
+}
+
+.lock-box {
+    width: 420px;
+    max-width: 92vw;
+    background: #fff;
+    border-radius: 7px;
+    box-shadow: 0 15px 50px rgba(0,0,0,.35);
+    overflow: hidden;
+}
+
+.lock-header {
+    background: #272d31;
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+.lock-icon {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: #fff;
+    color: #198754;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 34px;
+}
+
+.lock-title {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.lock-subtitle {
+    margin-top: 7px;
+    color: #cfd4d7;
+    font-size: 14px;
+}
+
+.lock-body {
+    padding: 25px;
+}
+
+.lock-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #444;
+}
+
+.lock-password-wrap {
+    display: flex;
+    gap: 8px;
+}
+
+.lock-password {
+    flex: 1;
+    height: 42px;
+    border: 1px solid #ccc;
+    outline: none;
+    padding: 0 12px;
+    font-size: 16px;
+    border-radius: 3px;
+}
+
+.lock-password:focus {
+    border-color: #0876c9;
+    box-shadow: 0 0 0 2px rgba(8,118,201,.12);
+}
+
+.lock-button {
+    height: 42px;
+    border: 0;
+    background: #198754;
+    color: white;
+    padding: 0 20px;
+    border-radius: 3px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.lock-button:hover {
+    background: #146c43;
+}
+
+.lock-error {
+    min-height: 20px;
+    margin-top: 10px;
+    color: #c0392b;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.lock-footer {
+    text-align: center;
+    padding: 0 25px 22px;
+    color: #888;
+    font-size: 12px;
+}
+
+/* ================= HEADER ================= */
+
+.top-header {
+    height: 46px;
+    background: linear-gradient(
+        90deg,
+        #268e99 0%,
+        #55a849 45%,
+        #8bc53f 100%
+    );
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    white-space: nowrap;
+    position: relative;
+}
+
+.company-section {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.company-logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #188d98;
+    font-size: 11px;
+    font-weight: bold;
+    border: 1px solid #ddd;
+}
+
+.company-name {
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.current-time {
+    font-size: 17px;
+    font-weight: bold;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.back-ebs {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ================= NAV ================= */
+
+.header-nav {
+    height: 44px;
+    display: flex;
+    align-items: stretch;
+    background: #252a2d;
+    border-bottom: 1px solid #1d2124;
+}
+
+.header-link {
+    display: flex;
+    align-items: center;
+    padding: 0 19px;
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: bold;
+    border-right: 1px solid #343a3d;
+    transition:
+        background 0.2s,
+        color 0.2s;
+}
+
+.header-link:hover {
+    background: #343a3d;
+    color: white;
+}
+
+.header-link.active {
+    background: #111619;
+    color: white;
+    border-bottom: 3px solid #42a85c;
+}
+
+.nav-item {
+    min-width: 70px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    font-size: 14px;
+    border-right: 1px solid #3b4145;
+    cursor: pointer;
+    user-select: none;
+}
+
+.nav-item:hover {
+    background: #343b40;
+}
+
+.nav-item.active {
+    background: #161b1e;
+    font-weight: bold;
+}
+
+/* ================= MAIN ================= */
+
+.main-area {
+    height: calc(100vh - 90px);
+    overflow: auto;
+    background: #f5f5f5;
+}
+
+/* ================= FILTER ================= */
+
+.filter-area {
+    background: #fff;
+    padding: 16px 7px 11px;
+    border-bottom: 1px solid #ddd;
+}
+
+.filter-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.report-name-field {
+    width: 340px;
+}
+
+.report-name-field label {
+    display: block;
+    margin-bottom: 6px;
+    color: #333;
+    font-size: 14px;
+}
+
+.report-name-input {
+    width: 100%;
+    height: 34px;
+    border: 1px solid #d7d7d7;
+    background: #fff;
+    padding: 5px 9px;
+    outline: none;
+    font-size: 14px;
+    border-radius: 2px;
+}
+
+.report-name-input:focus {
+    border-color: #1685ca;
+}
+
+.top-buttons {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-left: auto;
+}
+
+/* ================= BUTTON ================= */
+
+.btn {
+    height: 34px;
+    border: 0;
+    border-radius: 3px;
+    padding: 0 16px;
+    background: #0876c9;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background: #075c9d;
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+}
+
+.btn.clear {
+    background: #777;
+}
+
+.btn.clear:hover {
+    background: #555;
+}
+
+.btn.green {
+    background: #198754;
+}
+
+.btn.green:hover {
+    background: #146c43;
+}
+
+.btn.orange {
+    background: #d88900;
+}
+
+.btn.orange:hover {
+    background: #b16f00;
+}
+
+.btn.red {
+    background: #c0392b;
+}
+
+.btn.red:hover {
+    background: #962d22;
+}
+
+.btn.purple {
+    background: #6f42c1;
+}
+
+.btn.purple:hover {
+    background: #56339a;
+}
+
+.btn.save {
+    background: #008f5a;
+}
+
+.btn.save:hover {
+    background: #006d44;
+}
+
+.btn.print-btn {
+    background: #0876c9;
+    min-width: 95px;
+}
+
+/* ================= UPLOAD ================= */
+
+.upload-area {
+    margin-top: 14px;
+    border: 1px dashed #76aab2;
+    background: #f7fbfc;
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    flex-wrap: wrap;
+}
+
+.upload-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.upload-title {
+    color: #0871ae;
+    font-weight: bold;
+    white-space: nowrap;
+    font-size: 15px;
+}
+
+.upload-title.second {
+    color: #7a4f00;
+}
+
+.excel-input {
+    font-size: 14px;
+    max-width: 330px;
+}
+
+.file-name {
+    color: #666;
+    font-size: 14px;
+    max-width: 330px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.excel-status {
+    margin-left: auto;
+    color: #18883e;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.second-status {
+    color: #7a4f00;
+}
+
+/* ================= TOOLBAR ================= */
+
+.table-toolbar {
+    margin: 9px 6px 0;
+    min-height: 48px;
+    background: #fff;
+    border: 1px solid #d8d8d8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 9px;
+    gap: 11px;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    height: 34px;
+}
+
+.search-icon {
+    width: 40px;
+    height: 34px;
+    border: 1px solid #ccc;
+    border-right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.global-search {
+    height: 34px;
+    width: 330px;
+    border: 1px solid #ccc;
+    outline: none;
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+.record-info {
+    font-size: 14px;
+    color: #555;
+    white-space: nowrap;
+}
+
+.record-info strong {
+    color: #0874bf;
+    font-size: 15px;
+}
+
+/* ================= COLUMN MENU ================= */
+
+.column-menu-wrap {
+    position: relative;
+}
+
+.column-menu {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    width: 380px;
+    max-height: 450px;
+    overflow: auto;
+    background: white;
+    border: 1px solid #bbb;
+    box-shadow: 0 4px 15px rgba(0,0,0,.2);
+    z-index: 1000;
+    display: none;
+}
+
+.column-menu.show {
+    display: block;
+}
+
+.column-menu-header {
+    padding: 10px;
+    background: #f2f2f2;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+    font-size: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.column-menu-item {
+    display: grid;
+    grid-template-columns: 28px 1fr 32px 32px;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 9px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.column-menu-item:hover {
+    background: #eaf5fb;
+}
+
+.column-menu-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.position-btn {
+    width: 30px;
+    height: 27px;
+    padding: 0;
+    border: 0;
+    border-radius: 3px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.position-btn.up {
+    background: #0876c9;
+}
+
+.position-btn.down {
+    background: #198754;
+}
+
+.position-btn:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+}
+
+/* ================= TABLE ================= */
+
+.table-wrapper {
+    margin: 0 6px 12px;
+    background: white;
+    border: 1px solid #d0d0d0;
+    overflow: auto;
+    height: calc(100vh - 330px);
+    min-height: 250px;
+}
+
+#dataTable {
+    border-collapse: collapse;
+    width: max-content;
+    min-width: 100%;
+    table-layout: auto;
+    background: white;
+}
+
+#dataTable th {
+    background: #5ea2a7;
+    color: #0000c8;
+    font-size: 15px;
+    font-weight: bold;
+    border-right: 1px solid #d1d1d1;
+    border-bottom: 1px solid #777;
+    padding: 10px 9px;
+    height: 44px;
+    white-space: nowrap;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#dataTable th.header-editing {
+    background: #fff8d6 !important;
+    color: #222 !important;
+    padding: 5px;
+}
+
+.header-edit-input {
+    width: 100%;
+    min-width: 100px;
+    height: 32px;
+    border: 2px solid #0876c9;
+    outline: none;
+    padding: 3px 7px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    background: white;
+    color: #222;
+}
+
+#dataTable td {
+    border-right: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    padding: 7px 9px;
+    height: 34px;
+    font-size: 15px;
+    white-space: nowrap;
+    max-width: 600px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: white;
+    vertical-align: middle;
+}
+
+#dataTable tbody tr:nth-child(even) td {
+    background: #f5f5f5;
+}
+
+#dataTable tbody tr:hover td {
+    background: #e2f2fc;
+}
+
+/* ================= SELECTED ROW ================= */
+
+#dataTable tbody tr {
+    cursor: pointer;
+}
+
+#dataTable tbody tr.selected-row td {
+    background: #c8e7ff !important;
+    color: #111;
+}
+
+#dataTable tbody tr.selected-row:hover td {
+    background: #b6dcf7 !important;
+}
+
+#dataTable .filter-header th {
+    position: sticky;
+    top: 44px;
+    z-index: 9;
+    background: #e9f4f5;
+    padding: 5px;
+    height: 36px;
+}
+
+.column-filter {
+    width: 100%;
+    min-width: 85px;
+    height: 29px;
+    border: 1px solid #aaa;
+    background: white;
+    outline: none;
+    padding: 3px 6px;
+    font-size: 13px;
+}
+
+.column-filter:focus {
+    border-color: #0876c9;
+    box-shadow: 0 0 0 1px rgba(8,118,201,.15);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: grab;
+    user-select: none;
+}
+
+.header-content:active {
+    cursor: grabbing;
+}
+
+#dataTable th[draggable="true"] {
+    cursor: grab;
+}
+
+#dataTable th.dragging {
+    opacity: .55;
+}
+
+#dataTable th.drag-over {
+    background: #2f858c !important;
+    box-shadow: inset 3px 0 0 #0876c9;
+}
+
+.sort-icon {
+    color: #333;
+    font-size: 13px;
+    opacity: .7;
+}
+
+/* ================= CELL EDITING ================= */
+
+#dataTable td.editable-cell {
+    cursor: text;
+}
+
+#dataTable td.editable-cell:hover {
+    outline: 1px solid #1685ca;
+    outline-offset: -1px;
+}
+
+#dataTable td.editing {
+    background: #fff8d6 !important;
+    outline: 2px solid #0876c9 !important;
+    outline-offset: -2px;
+}
+
+.cell-edit-input {
+    width: 100%;
+    min-width: 100px;
+    height: 29px;
+    border: 1px solid #0876c9;
+    outline: none;
+    padding: 3px 7px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    background: #fffef0;
+}
+
+/* ================= EMPTY ================= */
+
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    min-height: 260px;
+    color: #777;
+    background: white;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+
+.empty-title {
+    color: #444;
+    font-size: 17px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.empty-text {
+    color: #888;
+    font-size: 14px;
+}
+
+/* ================= MODAL ================= */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal {
+    width: 900px;
+    max-width: 96vw;
+    max-height: 90vh;
+    overflow: auto;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.3);
+}
+
+.modal-header {
+    background: #272d31;
+    color: white;
+    padding: 15px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.modal-close {
+    border: 0;
+    background: transparent;
+    color: white;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 18px;
+}
+
+.mapping-info {
+    background: #eef8fb;
+    border: 1px solid #b8dce4;
+    padding: 12px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.mapping-row {
+    display: grid;
+    grid-template-columns:
+        minmax(140px, 1fr)
+        40px
+        minmax(140px, 1fr)
+        minmax(140px, 1fr)
+        minmax(140px, 1fr)
+        75px;
+    gap: 8px;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.mapping-row.header {
+    background: #eee;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.mapping-row select,
+.mapping-row input {
+    width: 100%;
+    height: 35px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    padding: 5px;
+    background: white;
+}
+
+.mapping-arrow {
+    text-align: center;
+    font-weight: bold;
+    color: #0876c9;
+    font-size: 17px;
+}
+
+.modal-footer {
+    padding: 14px 18px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
+/* ================= DRAG INFO ================= */
+
+.drag-info {
+    font-size: 13px;
+    color: #777;
+    margin-left: 6px;
+}
+
+/* ================= SCROLL ================= */
+
+::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+}
+
+::-webkit-scrollbar-track {
+    background: #eeeeee;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #a8a8a8;
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1100px) {
+
+    body {
+        overflow: auto;
+    }
+
+    .current-time {
+        position: static;
+        transform: none;
+        margin-left: auto;
+        margin-right: 20px;
+    }
+
+    .top-buttons {
+        margin-left: 0;
+    }
+
+    .table-wrapper {
+        height: calc(100vh - 390px);
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .company-name {
+        font-size: 14px;
+    }
+
+    .current-time {
+        display: none;
+    }
+
+    .report-name-field {
+        width: 100%;
+    }
+
+    .top-buttons {
+        width: 100%;
+    }
+
+    .top-buttons .btn {
+        flex: 1;
+    }
+
+    .global-search {
+        width: 220px;
+    }
+
+    .excel-status {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .mapping-row {
+        grid-template-columns: 1fr;
+    }
+
+    .mapping-row.header {
+        display: none;
+    }
+
+    .mapping-arrow {
+        display: none;
+    }
+
+    .lock-box {
+        width: 380px;
+    }
+
+}
+
+/* ============================================================
+   EXTRA LARGE TEXT
+   Functionality/JavaScript unchanged
+============================================================ */
+
+#dataTable th {
+    font-size: 16px;
+}
+
+#dataTable td {
+    font-size: 16px;
+}
+
+.column-filter {
+    font-size: 14px;
+}
+
+.global-search {
+    font-size: 15px;
+}
+
+.btn {
+    font-size: 15px;
+}
+
+.upload-title,
+.file-name,
+.excel-input,
+.excel-status {
+    font-size: 15px;
+}
+
+.record-info {
+    font-size: 15px;
+}
+
+.report-name-field label {
+    font-size: 15px;
+}
+
+.report-name-input {
+    font-size: 15px;
+}
+
+.column-menu-header,
+.column-menu-item {
+    font-size: 15px;
+}
+
+.drag-info {
+    font-size: 14px;
+}
+
+.mapping-info {
+    font-size: 15px;
+}
+
+.mapping-row.header {
+    font-size: 14px;
+}
+
+.mapping-row select,
+.mapping-row input {
+    font-size: 15px;
+}
+
+.empty-title {
+    font-size: 18px;
+}
+
+.empty-text {
+    font-size: 15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ================= FULL UI LOCK ================= -->
+
+<div
+    class="ui-lock-overlay"
+    id="uiLockOverlay"
+>
+
+    <div class="lock-box">
+
+        <div class="lock-header">
+
+            <div class="lock-icon">
+                🔒
+            </div>
+
+            <div class="lock-title">
+                Excel Editing Locked
+            </div>
+
+            <div class="lock-subtitle">
+                Enter password to access the application
+            </div>
+
+        </div>
+
+        <div class="lock-body">
+
+            <label
+                class="lock-label"
+                for="uiLockPassword"
+            >
+                Password
+            </label>
+
+            <div class="lock-password-wrap">
+
+                <input
+                    type="password"
+                    id="uiLockPassword"
+                    class="lock-password"
+                    placeholder="Enter password"
+                    autocomplete="off"
+                >
+
+                <button
+                    type="button"
+                    class="lock-button"
+                    onclick="unlockUI()"
+                >
+                    Unlock
+                </button>
+
+            </div>
+
+            <div
+                class="lock-error"
+                id="uiLockError"
+            ></div>
+
+        </div>
+
+        <div class="lock-footer">
+            SH Group • Excel Editing
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= HEADER ================= -->
+
+<div class="top-header">
+
+    <div class="company-section">
+
+        <div class="company-logo">
+            SG
+        </div>
+
+        <div class="company-name">
+            Excel Editing - SH Group
+        </div>
+
+    </div>
+
+    <div class="current-time" id="currentTime"></div>
+
+    <div class="back-ebs">
+        ⇥ Back 
+    </div>
+
+</div>
+
+<!-- ================= NAV ================= -->
+
+<nav class="header-nav">
+
+    <a
+        href="excel.html"
+        class="header-link active"
+    >
+        Excel Editing
+    </a>
+
+    <a
+        href="gatepass.html"
+        class="header-link"
+    >
+        OGP Print
+    </a>
+<a
+        href="vehicleSummary.html"
+        class="header-link"
+    >
+        Vehicle Summary
+    </a>
+</nav>
+
+<!-- ================= MAIN ================= -->
+
+<div class="main-area">
+
+<div class="filter-area">
+
+<div class="filter-row">
+
+<div class="report-name-field">
+
+<label>Report Name</label>
+
+<input
+type="text"
+class="report-name-input"
+id="reportName"
+value="DBL Delivery Report"
+placeholder="Enter Report Name"
+>
+
+</div>
+
+<div class="top-buttons">
+
+<button
+class="btn"
+onclick="applyTopFilters()">
+Apply 🔍
+</button>
+
+<button
+class="btn clear"
+onclick="clearAllFilters()">
+Clear ↻
+</button>
+
+</div>
+
+</div>
+
+<!-- ================= UPLOAD ================= -->
+
+<div class="upload-area">
+
+<div class="upload-row">
+
+<div class="upload-title">
+1st Excel:
+</div>
+
+<input
+type="file"
+class="excel-input"
+id="excelFile"
+accept=".xlsx,.xls,.csv"
+>
+
+<div
+class="file-name"
+id="fileName">
+No file selected
+</div>
+
+</div>
+
+<div class="upload-row">
+
+<div class="upload-title second">
+2nd Excel:
+</div>
+
+<input
+type="file"
+class="excel-input"
+id="secondExcelFile"
+accept=".xlsx,.xls,.csv"
+>
+
+<div
+class="file-name"
+id="secondFileName">
+Optional
+</div>
+
+<button
+class="btn red"
+id="clearSecondBtn"
+onclick="clearSecondExcel()"
+style="display:none;">
+Remove 2nd Excel
+</button>
+
+</div>
+
+<div
+class="excel-status"
+id="excelStatus">
+</div>
+
+<div
+class="excel-status second-status"
+id="secondExcelStatus">
+</div>
+
+</div>
+
+</div>
+
+<!-- ================= TOOLBAR ================= -->
+
+<div class="table-toolbar">
+
+<div class="toolbar-left">
+
+<div class="search-box">
+
+<div class="search-icon">
+🔍
+</div>
+
+<input
+type="text"
+id="globalSearch"
+class="global-search"
+placeholder="Search all columns..."
+>
+
+</div>
+
+<button
+class="btn clear"
+onclick="clearColumnFilters()">
+Clear Filters
+</button>
+
+<div class="column-menu-wrap">
+
+<button
+class="btn green"
+onclick="toggleColumnMenu(event)">
+Columns ▾
+</button>
+
+<div
+class="column-menu"
+id="columnMenu">
+
+<div class="column-menu-header">
+Show / Hide Columns + Change Position
+</div>
+
+<div id="columnMenuItems"></div>
+
+</div>
+
+</div>
+
+<button
+class="btn orange"
+onclick="openMappingModal()">
+Mapping ⚙
+</button>
+
+<button
+class="btn purple"
+onclick="addManualColumn()">
++ Column
+</button>
+
+<button
+class="btn save"
+onclick="saveExcel()">
+💾 Save Excel
+</button>
+
+<button
+class="btn print-btn"
+onclick="printTable()">
+🖨 Print
+</button>
+
+<span class="drag-info">
+↔ Drag header to change position • Double-click header to rename • Double-click cell to edit • Click row + ↑/↓ to navigate
+</span>
+
+</div>
+
+<div class="record-info">
+
+Showing
+<strong id="recordCount">0</strong>
+records
+
+</div>
+
+</div>
+
+<!-- ================= TABLE ================= -->
+
+<div
+class="table-wrapper"
+id="tableWrapper">
+
+<div
+class="empty-state"
+id="emptyState">
+
+<div class="empty-icon">
+📊
+</div>
+
+<div class="empty-title">
+No Excel data loaded
+</div>
+
+<div class="empty-text">
+Upload your first Excel file above.
+</div>
+
+</div>
+
+<table
+id="dataTable"
+style="display:none;">
+
+<thead>
+
+<tr id="tableHeader"></tr>
+
+<tr
+class="filter-header"
+id="tableFilterRow">
+</tr>
+
+</thead>
+
+<tbody id="tableBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- ================= MAPPING MODAL ================= -->
+
+<div
+class="modal-overlay"
+id="mappingModal">
+
+<div class="modal">
+
+<div class="modal-header">
+
+<div class="modal-title">
+Excel Column Mapping
+</div>
+
+<button
+class="modal-close"
+onclick="closeMappingModal()">
+×
+</button>
+
+</div>
+
+<div class="modal-body">
+
+<div class="mapping-info">
+
+<b>কিভাবে কাজ করবে:</b><br>
+
+1. 1st Excel-এর কোন column দিয়ে match করবেন সেটি select করুন।<br>
+
+2. 2nd Excel-এর কোন column-এর সাথে match করবেন সেটি select করুন।<br>
+
+3. 2nd Excel থেকে কোন column-এর value আনবেন সেটি select করুন।<br>
+
+4. নতুন column-এর নাম দিন। নাম না দিলে Value Column-এর নাম ব্যবহার হবে।<br><br>
+
+<b>Example:</b><br>
+
+1st Excel:
+<b>Challan No</b>
+
+↔
+
+2nd Excel:
+<b>Challan No</b>
+
+→
+
+2nd Excel Value:
+<b>Description</b>
+
+→
+
+New Column:
+<b>Description</b>
+
+</div>
+
+<div class="mapping-row header">
+
+<div>1st Excel Match</div>
+
+<div></div>
+
+<div>2nd Excel Match</div>
+
+<div>Get Value From</div>
+
+<div>New Column Name</div>
+
+<div>Action</div>
+
+</div>
+
+<div id="mappingRows"></div>
+
+<button
+class="btn green"
+style="margin-top:14px;"
+onclick="addMappingRow()">
++ Add Mapping
+</button>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+class="btn clear"
+onclick="closeMappingModal()">
+Cancel
+</button>
+
+<button
+class="btn save"
+onclick="applyMappings()">
+Apply Mapping
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* ============================================================
+UI LOCK
+============================================================ */
+
+const UI_LOCK_PASSWORD = "1234";
+
+function unlockUI() {
+
+    const passwordInput =
+        document.getElementById("uiLockPassword");
+
+    const error =
+        document.getElementById("uiLockError");
+
+    const password =
+        passwordInput.value;
+
+    if (password === UI_LOCK_PASSWORD) {
+
+        document
+        .getElementById("uiLockOverlay")
+        .classList.add("hidden");
+
+        passwordInput.value = "";
+
+        error.textContent = "";
+
+    }
+    else {
+
+        error.textContent =
+            "Incorrect password.";
+
+        passwordInput.value = "";
+
+        passwordInput.focus();
+
+    }
+
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const passwordInput =
+            document.getElementById("uiLockPassword");
+
+        if (passwordInput) {
+
+            passwordInput.focus();
+
+            passwordInput.addEventListener(
+                "keydown",
+                function(event) {
+
+                    if (event.key === "Enter") {
+
+                        event.preventDefault();
+
+                        unlockUI();
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+);
+
+/* ============================================================
+GLOBAL VARIABLES
+============================================================ */
+
+let originalData = [];
+
+let filteredData = [];
+
+let columns = [];
+
+let baseColumns = [];
+
+let secondExcelData = [];
+
+let secondColumns = [];
+
+let secondExcelLoaded = false;
+
+let hiddenColumns = new Set();
+
+let sortColumn = -1;
+
+let sortDirection = "asc";
+
+let mappings = [];
+
+let draggedColumnIndex = null;
+
+let reportName = "DBL Delivery Report";
+
+/* ================= NEW: SELECTED ROW ================= */
+
+let selectedRowIndex = -1;
+
+/* ============================================================
+READY
+============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        initializeEvents();
+
+        updateClock();
+
+        setInterval(
+            updateClock,
+            1000
+        );
+
+    }
+);
+
+/* ============================================================
+EVENTS
+============================================================ */
+
+function initializeEvents() {
+
+    document
+    .getElementById("excelFile")
+    .addEventListener(
+        "change",
+        handleFirstExcelUpload
+    );
+
+    document
+    .getElementById("secondExcelFile")
+    .addEventListener(
+        "change",
+        handleSecondExcelUpload
+    );
+
+    document
+    .getElementById("globalSearch")
+    .addEventListener(
+        "input",
+        renderTable
+    );
+
+    document
+    .getElementById("reportName")
+    .addEventListener(
+        "input",
+        function() {
+
+            reportName =
+                this.value.trim() ||
+                "DBL Delivery Report";
+
+        }
+    );
+
+    /* NEW: ROW SELECTION */
+
+    initializeRowSelection();
+
+    document.addEventListener(
+        "click",
+        function(event) {
+
+            const wrap =
+                document.querySelector(
+                    ".column-menu-wrap"
+                );
+
+            if (
+                wrap &&
+                !wrap.contains(event.target)
+            ) {
+
+                document
+                .getElementById("columnMenu")
+                .classList.remove("show");
+
+            }
+
+        }
+    );
+
+    document
+    .getElementById("mappingModal")
+    .addEventListener(
+        "click",
+        function(event) {
+
+            if (event.target === this) {
+
+                closeMappingModal();
+
+            }
+
+        }
+    );
+
+}
+
+/* ============================================================
+ROW SELECTION + KEYBOARD NAVIGATION
+============================================================ */
+
+function initializeRowSelection() {
+
+    const tbody =
+        document.getElementById("tableBody");
+
+    if (!tbody) return;
+
+    tbody.addEventListener(
+        "click",
+        function(event) {
+
+            const row =
+                event.target.closest("tr");
+
+            if (!row) return;
+
+            const rows =
+                Array.from(
+                    tbody.querySelectorAll("tr")
+                );
+
+            const index =
+                rows.indexOf(row);
+
+            if (index < 0) return;
+
+            if (
+                row.textContent.includes(
+                    "No matching records found."
+                )
+            ) {
+                return;
+            }
+
+            selectTableRow(index);
+
+        }
+    );
+
+}
+
+function selectTableRow(index) {
+
+    const rows =
+        Array.from(
+            document.querySelectorAll(
+                "#tableBody tr"
+            )
+        );
+
+    if (!rows.length) {
+
+        selectedRowIndex = -1;
+
+        return;
+
+    }
+
+    if (index < 0) {
+
+        index = 0;
+
+    }
+
+    if (index >= rows.length) {
+
+        index = rows.length - 1;
+
+    }
+
+    if (
+        rows[index].textContent.includes(
+            "No matching records found."
+        )
+    ) {
+
+        return;
+
+    }
+
+    rows.forEach(
+        row => {
+
+            row.classList.remove(
+                "selected-row"
+            );
+
+        }
+    );
+
+    rows[index].classList.add(
+        "selected-row"
+    );
+
+    selectedRowIndex = index;
+
+    rows[index].scrollIntoView({
+        block: "nearest",
+        inline: "nearest"
+    });
+
+}
+
+/* ============================================================
+KEYBOARD UP / DOWN
+============================================================ */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        const active =
+            document.activeElement;
+
+        if (
+            active &&
+            (
+                active.tagName === "INPUT" ||
+                active.tagName === "TEXTAREA" ||
+                active.tagName === "SELECT"
+            )
+        ) {
+
+            return;
+
+        }
+
+        const lockOverlay =
+            document.getElementById(
+                "uiLockOverlay"
+            );
+
+        if (
+            lockOverlay &&
+            !lockOverlay.classList.contains("hidden")
+        ) {
+
+            return;
+
+        }
+
+        const rows =
+            Array.from(
+                document.querySelectorAll(
+                    "#tableBody tr"
+                )
+            );
+
+        if (!rows.length) return;
+
+        if (
+            rows.length === 1 &&
+            rows[0].textContent.includes(
+                "No matching records found."
+            )
+        ) {
+
+            return;
+
+        }
+
+        if (event.key === "ArrowDown") {
+
+            event.preventDefault();
+
+            if (selectedRowIndex < 0) {
+
+                selectTableRow(0);
+
+            }
+            else {
+
+                selectTableRow(
+                    selectedRowIndex + 1
+                );
+
+            }
+
+        }
+
+        if (event.key === "ArrowUp") {
+
+            event.preventDefault();
+
+            if (selectedRowIndex < 0) {
+
+                selectTableRow(
+                    rows.length - 1
+                );
+
+            }
+            else {
+
+                selectTableRow(
+                    selectedRowIndex - 1
+                );
+
+            }
+
+        }
+
+    }
+);
+
+/* ============================================================
+REPORT NAME
+============================================================ */
+
+function getReportName() {
+
+    const input =
+        document.getElementById(
+            "reportName"
+        );
+
+    const name =
+        input
+            ? input.value.trim()
+            : "";
+
+    return name ||
+        "DBL Delivery Report";
+
+}
+
+/* ============================================================
+FIRST EXCEL
+============================================================ */
+
+function handleFirstExcelUpload(event) {
+
+    const file =
+        event.target.files[0];
+
+    if (!file) return;
+
+    document.getElementById(
+        "fileName"
+    ).textContent =
+        file.name;
+
+    document.getElementById(
+        "excelStatus"
+    ).textContent =
+        "Reading 1st Excel...";
+
+    const reader =
+        new FileReader();
+
+    reader.onload =
+    function(e) {
+
+        try {
+
+            const workbook =
+                XLSX.read(
+                    new Uint8Array(
+                        e.target.result
+                    ),
+                    {
+                        type: "array",
+                        cellDates: true
+                    }
+                );
+
+            const sheet =
+                workbook.Sheets[
+                    workbook.SheetNames[0]
+                ];
+
+            const rows =
+                XLSX.utils.sheet_to_json(
+                    sheet,
+                    {
+                        header: 1,
+                        defval: "",
+                        raw: false
+                    }
+                );
+
+            if (!rows.length) {
+
+                throw new Error(
+                    "Excel file is empty."
+                );
+
+            }
+
+            baseColumns =
+                buildHeaders(
+                    rows[0]
+                );
+
+            columns =
+                [...baseColumns];
+
+            originalData =
+                rows
+                .slice(1)
+                .filter(
+                    row =>
+                        row.some(
+                            cell =>
+                                String(
+                                    cell ?? ""
+                                ).trim() !== ""
+                        )
+                )
+                .map(
+                    row => {
+
+                        const obj = {};
+
+                        baseColumns.forEach(
+                            (column, index) => {
+
+                                obj[column] =
+                                    formatExcelValue(
+                                        row[index] ?? ""
+                                    );
+
+                            }
+                        );
+
+                        return obj;
+
+                    }
+                );
+
+            hiddenColumns.clear();
+
+            sortColumn = -1;
+
+            sortDirection = "asc";
+
+            mappings = [];
+
+            selectedRowIndex = -1;
+
+            resetFiltersOnly();
+
+            createDynamicTable();
+
+            createColumnMenu();
+
+            renderTable();
+
+            document.getElementById(
+                "excelStatus"
+            ).textContent =
+                `${originalData.length} rows loaded`;
+
+        }
+        catch(error) {
+
+            console.error(error);
+
+            alert(
+                "1st Excel file read করা যায়নি.\n\n" +
+                error.message
+            );
+
+        }
+
+    };
+
+    reader.readAsArrayBuffer(file);
+
+}
+
+/* ============================================================
+SECOND EXCEL
+============================================================ */
+
+function handleSecondExcelUpload(event) {
+
+    const file =
+        event.target.files[0];
+
+    if (!file) return;
+
+    document.getElementById(
+        "secondFileName"
+    ).textContent =
+        file.name;
+
+    document.getElementById(
+        "secondExcelStatus"
+    ).textContent =
+        "Reading 2nd Excel...";
+
+    const reader =
+        new FileReader();
+
+    reader.onload =
+    function(e) {
+
+        try {
+
+            const workbook =
+                XLSX.read(
+                    new Uint8Array(
+                        e.target.result
+                    ),
+                    {
+                        type: "array",
+                        cellDates: true
+                    }
+                );
+
+            const sheet =
+                workbook.Sheets[
+                    workbook.SheetNames[0]
+                ];
+
+            const rows =
+                XLSX.utils.sheet_to_json(
+                    sheet,
+                    {
+                        header: 1,
+                        defval: "",
+                        raw: false
+                    }
+                );
+
+            if (!rows.length) {
+
+                throw new Error(
+                    "2nd Excel is empty."
+                );
+
+            }
+
+            secondColumns =
+                buildHeaders(
+                    rows[0]
+                );
+
+            secondExcelData =
+                rows
+                .slice(1)
+                .filter(
+                    row =>
+                        row.some(
+                            cell =>
+                                String(
+                                    cell ?? ""
+                                ).trim() !== ""
+                        )
+                )
+                .map(
+                    row => {
+
+                        const obj = {};
+
+                        secondColumns.forEach(
+                            (column, index) => {
+
+                                obj[column] =
+                                    formatExcelValue(
+                                        row[index] ?? ""
+                                    );
+
+                            }
+                        );
+
+                        return obj;
+
+                    }
+                );
+
+            secondExcelLoaded = true;
+
+            document.getElementById(
+                "secondExcelStatus"
+            ).textContent =
+                `${secondExcelData.length} rows loaded`;
+
+            document.getElementById(
+                "clearSecondBtn"
+            ).style.display =
+                "inline-block";
+
+            openMappingModal();
+
+        }
+        catch(error) {
+
+            console.error(error);
+
+            alert(
+                "2nd Excel file read করা যায়নি.\n\n" +
+                error.message
+            );
+
+        }
+
+    };
+
+    reader.readAsArrayBuffer(file);
+
+}
+
+/* ============================================================
+BUILD HEADERS
+============================================================ */
+
+function buildHeaders(headerRow) {
+
+    const result = [];
+
+    const used = {};
+
+    headerRow.forEach(
+        (header, index) => {
+
+            let name =
+                String(
+                    header ?? ""
+                ).trim();
+
+            if (!name) {
+
+                name =
+                    `Column ${index + 1}`;
+
+            }
+
+            const key =
+                name.toLowerCase();
+
+            if (used[key]) {
+
+                used[key]++;
+
+                name =
+                    `${name} ${used[key]}`;
+
+            }
+            else {
+
+                used[key] = 1;
+
+            }
+
+            result.push(name);
+
+        }
+    );
+
+    return result;
+
+}
+
+/* ============================================================
+FORMAT VALUE
+============================================================ */
+
+function formatExcelValue(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+    if (
+        value instanceof Date &&
+        !isNaN(value.getTime())
+    ) {
+
+        return formatDate(value);
+
+    }
+
+    let text =
+        String(value).trim();
+
+    if (
+        /^[+-]?\d+(\.\d+)?e[+-]?\d+$/i.test(text)
+    ) {
+
+        text =
+            expandScientificNotation(text);
+
+    }
+
+    if (
+        /^\d+\.0+$/.test(text)
+    ) {
+
+        text =
+            text.split(".")[0];
+
+    }
+
+    return text;
+
+}
+
+function expandScientificNotation(value) {
+
+    let str =
+        String(value)
+        .trim()
+        .toUpperCase();
+
+    let sign = "";
+
+    if (
+        str.startsWith("-") ||
+        str.startsWith("+")
+    ) {
+
+        sign =
+            str.charAt(0);
+
+        str =
+            str.substring(1);
+
+    }
+
+    const parts =
+        str.split("E");
+
+    if (parts.length !== 2) {
+
+        return value;
+
+    }
+
+    const coefficient =
+        parts[0];
+
+    const exponent =
+        parseInt(
+            parts[1],
+            10
+        );
+
+    if (isNaN(exponent)) {
+
+        return value;
+
+    }
+
+    const decimalParts =
+        coefficient.split(".");
+
+    const digits =
+        decimalParts.join("");
+
+    let decimalPosition =
+        decimalParts[0].length +
+        exponent;
+
+    if (decimalPosition <= 0) {
+
+        return (
+            sign +
+            "0." +
+            "0".repeat(
+                Math.abs(decimalPosition)
+            ) +
+            digits
+        );
+
+    }
+
+    if (
+        decimalPosition >=
+        digits.length
+    ) {
+
+        return (
+            sign +
+            digits +
+            "0".repeat(
+                decimalPosition -
+                digits.length
+            )
+        );
+
+    }
+
+    return (
+        sign +
+        digits.slice(
+            0,
+            decimalPosition
+        ) +
+        "." +
+        digits.slice(
+            decimalPosition
+        )
+    );
+
+}
+
+function formatDate(date) {
+
+    return (
+        String(
+            date.getDate()
+        ).padStart(2, "0") +
+        "-" +
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0") +
+        "-" +
+        date.getFullYear()
+    );
+
+}
+
+/* ============================================================
+NORMALIZE
+============================================================ */
+
+function normalizeHeader(value) {
+
+    return String(value || "")
+        .toLowerCase()
+        .replace(
+            /[\s_\-/.]+/g,
+            ""
+        )
+        .trim();
+
+}
+
+function normalizeMatchValue(value) {
+
+    let text =
+        String(
+            value ?? ""
+        )
+        .trim();
+
+    if (!text) return "";
+
+    if (
+        /^[+-]?\d+(\.\d+)?e[+-]?\d+$/i.test(text)
+    ) {
+
+        text =
+            expandScientificNotation(text);
+
+    }
+
+    text =
+        text.replace(
+            /,/g,
+            ""
+        );
+
+    if (
+        /^\d+\.0+$/.test(text)
+    ) {
+
+        text =
+            text.split(".")[0];
+
+    }
+
+    return text
+        .toLowerCase()
+        .trim();
+
+}
+
+/* ============================================================
+FIND COLUMN
+============================================================ */
+
+function findColumn(possibleNames) {
+
+    for (
+        const column of columns
+    ) {
+
+        for (
+            const name of possibleNames
+        ) {
+
+            if (
+                normalizeHeader(column) ===
+                normalizeHeader(name)
+            ) {
+
+                return column;
+
+            }
+
+        }
+
+    }
+
+    return null;
+
+}
+
+/* ============================================================
+MAPPING MODAL
+============================================================ */
+
+function openMappingModal() {
+
+    if (!originalData.length) {
+
+        alert(
+            "আগে 1st Excel upload করুন।"
+        );
+
+        return;
+
+    }
+
+    if (!secondExcelLoaded) {
+
+        alert(
+            "আগে 2nd Excel upload করুন।"
+        );
+
+        return;
+
+    }
+
+    const container =
+        document.getElementById(
+            "mappingRows"
+        );
+
+    container.innerHTML = "";
+
+    if (mappings.length) {
+
+        mappings.forEach(
+            mapping => {
+
+                addMappingRow(
+                    mapping
+                );
+
+            }
+        );
+
+    }
+    else {
+
+        addMappingRow();
+
+    }
+
+    document
+    .getElementById("mappingModal")
+    .classList.add("show");
+
+}
+
+function closeMappingModal() {
+
+    document
+    .getElementById("mappingModal")
+    .classList.remove("show");
+
+}
+
+/* ============================================================
+ADD MAPPING ROW
+============================================================ */
+
+function addMappingRow(existing = null) {
+
+    const container =
+        document.getElementById(
+            "mappingRows"
+        );
+
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "mapping-row";
+
+    const mainSelect =
+        document.createElement("select");
+
+    addSelectOptions(
+        mainSelect,
+        baseColumns,
+        existing
+            ? existing.mainMatch
+            : ""
+    );
+
+    const arrow =
+        document.createElement("div");
+
+    arrow.className =
+        "mapping-arrow";
+
+    arrow.textContent =
+        "↔";
+
+    const secondMatch =
+        document.createElement("select");
+
+    addSelectOptions(
+        secondMatch,
+        secondColumns,
+        existing
+            ? existing.secondMatch
+            : ""
+    );
+
+    const valueSelect =
+        document.createElement("select");
+
+    addSelectOptions(
+        valueSelect,
+        secondColumns,
+        existing
+            ? existing.valueColumn
+            : ""
+    );
+
+    const newName =
+        document.createElement("input");
+
+    newName.type =
+        "text";
+
+    newName.placeholder =
+        "New column name";
+
+    newName.value =
+        existing
+            ? existing.newColumn
+            : "";
+
+    const remove =
+        document.createElement("button");
+
+    remove.className =
+        "btn red";
+
+    remove.textContent =
+        "Remove";
+
+    remove.style.padding =
+        "0 9px";
+
+    remove.onclick =
+    function() {
+
+        row.remove();
+
+    };
+
+    row.appendChild(
+        mainSelect
+    );
+
+    row.appendChild(
+        arrow
+    );
+
+    row.appendChild(
+        secondMatch
+    );
+
+    row.appendChild(
+        valueSelect
+    );
+
+    row.appendChild(
+        newName
+    );
+
+    row.appendChild(
+        remove
+    );
+
+    row._mainSelect =
+        mainSelect;
+
+    row._secondMatch =
+        secondMatch;
+
+    row._valueSelect =
+        valueSelect;
+
+    row._newName =
+        newName;
+
+    container.appendChild(
+        row
+    );
+
+}
+
+/* ============================================================
+SELECT OPTIONS
+============================================================ */
+
+function addSelectOptions(
+    select,
+    list,
+    selected
+) {
+
+    select.innerHTML = "";
+
+    const empty =
+        document.createElement(
+            "option"
+        );
+
+    empty.value = "";
+
+    empty.textContent =
+        "-- Select --";
+
+    select.appendChild(
+        empty
+    );
+
+    list.forEach(
+        column => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                column;
+
+            option.textContent =
+                column;
+
+            if (
+                column === selected
+            ) {
+
+                option.selected =
+                    true;
+
+            }
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+}
+
+/* ============================================================
+APPLY MAPPINGS
+============================================================ */
+
+function applyMappings() {
+
+    const rows =
+        Array.from(
+            document.querySelectorAll(
+                "#mappingRows .mapping-row"
+            )
+        );
+
+    const newMappings = [];
+
+    for (
+        const row of rows
+    ) {
+
+        const mainMatch =
+            row._mainSelect.value;
+
+        const secondMatch =
+            row._secondMatch.value;
+
+        const valueColumn =
+            row._valueSelect.value;
+
+        let newColumn =
+            row._newName.value.trim();
+
+        if (
+            !mainMatch &&
+            !secondMatch &&
+            !valueColumn &&
+            !newColumn
+        ) {
+
+            continue;
+
+        }
+
+        if (
+            !mainMatch ||
+            !secondMatch ||
+            !valueColumn
+        ) {
+
+            alert(
+                "প্রতিটি Mapping row-তে Match Column এবং Value Column select করুন।"
+            );
+
+            return;
+
+        }
+
+        if (!newColumn) {
+
+            newColumn =
+                valueColumn;
+
+        }
+
+        newMappings.push({
+
+            mainMatch,
+
+            secondMatch,
+
+            valueColumn,
+
+            newColumn
+
+        });
+
+    }
+
+    if (!newMappings.length) {
+
+        alert(
+            "কমপক্ষে একটি Mapping দিন।"
+        );
+
+        return;
+
+    }
+
+    const names =
+        new Set();
+
+    for (
+        const mapping of newMappings
+    ) {
+
+        const key =
+            normalizeHeader(
+                mapping.newColumn
+            );
+
+        if (names.has(key)) {
+
+            alert(
+                `Duplicate New Column Name:\n${mapping.newColumn}`
+            );
+
+            return;
+
+        }
+
+        names.add(key);
+
+    }
+
+    removeMappedColumns();
+
+    mappings =
+        newMappings;
+
+    applyMappingsToData();
+
+    createDynamicTable();
+
+    createColumnMenu();
+
+    renderTable();
+
+    closeMappingModal();
+
+    document.getElementById(
+        "secondExcelStatus"
+    ).textContent =
+        `${secondExcelData.length} rows loaded • ` +
+        `${mappings.length} mapping applied`;
+
+}
+
+/* ============================================================
+REMOVE MAPPED COLUMNS
+============================================================ */
+
+function removeMappedColumns() {
+
+    const oldMappedNames =
+        new Set(
+            mappings.map(
+                mapping =>
+                    mapping.newColumn
+            )
+        );
+
+    if (!oldMappedNames.size) {
+
+        return;
+
+    }
+
+    originalData.forEach(
+        row => {
+
+            oldMappedNames.forEach(
+                column => {
+
+                    delete row[column];
+
+                }
+            );
+
+        }
+    );
+
+    columns =
+        columns.filter(
+            column =>
+                !oldMappedNames.has(column)
+        );
+
+    hiddenColumns =
+        new Set(
+            [...hiddenColumns].filter(
+                column =>
+                    !oldMappedNames.has(column)
+            )
+        );
+
+}
+
+/* ============================================================
+APPLY MAPPINGS TO MAIN DATA
+============================================================ */
+
+function applyMappingsToData() {
+
+    if (
+        !originalData.length ||
+        !secondExcelData.length
+    ) {
+
+        return;
+
+    }
+
+    mappings.forEach(
+        mapping => {
+
+            const lookup =
+                new Map();
+
+            secondExcelData.forEach(
+                secondRow => {
+
+                    const key =
+                        normalizeMatchValue(
+                            secondRow[
+                                mapping.secondMatch
+                            ]
+                        );
+
+                    if (!key) {
+
+                        return;
+
+                    }
+
+                    if (
+                        !lookup.has(key)
+                    ) {
+
+                        lookup.set(
+                            key,
+                            secondRow[
+                                mapping.valueColumn
+                            ] ?? ""
+                        );
+
+                    }
+
+                }
+            );
+
+            if (
+                !columns.includes(
+                    mapping.newColumn
+                )
+            ) {
+
+                columns.push(
+                    mapping.newColumn
+                );
+
+            }
+
+            originalData.forEach(
+                row => {
+
+                    const key =
+                        normalizeMatchValue(
+                            row[
+                                mapping.mainMatch
+                            ]
+                        );
+
+                    if (!key) {
+
+                        row[
+                            mapping.newColumn
+                        ] = "";
+
+                        return;
+
+                    }
+
+                    row[
+                        mapping.newColumn
+                    ] =
+                        lookup.has(key)
+                            ? formatExcelValue(
+                                lookup.get(key)
+                            )
+                            : "";
+
+                }
+            );
+
+        }
+    );
+
+}
+
+/* ============================================================
+MANUAL NEW COLUMN
+============================================================ */
+
+function addManualColumn() {
+
+    if (!originalData.length) {
+
+        alert(
+            "আগে 1st Excel upload করুন।"
+        );
+
+        return;
+
+    }
+
+    const name =
+        prompt(
+            "নতুন Column-এর নাম দিন:"
+        );
+
+    if (!name) return;
+
+    const cleanName =
+        name.trim();
+
+    if (
+        columns.includes(
+            cleanName
+        )
+    ) {
+
+        alert(
+            "এই নামে Column already আছে।"
+        );
+
+        return;
+
+    }
+
+    columns.push(
+        cleanName
+    );
+
+    originalData.forEach(
+        row => {
+
+            row[cleanName] =
+                "";
+
+        }
+    );
+
+    createDynamicTable();
+
+    createColumnMenu();
+
+    renderTable();
+
+}
+
+/* ============================================================
+CLEAR SECOND EXCEL
+============================================================ */
+
+function clearSecondExcel() {
+
+    removeMappedColumns();
+
+    secondExcelData = [];
+
+    secondColumns = [];
+
+    secondExcelLoaded = false;
+
+    mappings = [];
+
+    document.getElementById(
+        "secondExcelFile"
+    ).value = "";
+
+    document.getElementById(
+        "secondFileName"
+    ).textContent =
+        "Optional";
+
+    document.getElementById(
+        "secondExcelStatus"
+    ).textContent =
+        "";
+
+    document.getElementById(
+        "clearSecondBtn"
+    ).style.display =
+        "none";
+
+    createDynamicTable();
+
+    createColumnMenu();
+
+    renderTable();
+
+}
+
+/* ============================================================
+TABLE
+============================================================ */
+
+function createDynamicTable() {
+
+    const table =
+        document.getElementById(
+            "dataTable"
+        );
+
+    const header =
+        document.getElementById(
+            "tableHeader"
+        );
+
+    const filterRow =
+        document.getElementById(
+            "tableFilterRow"
+        );
+
+    header.innerHTML = "";
+
+    filterRow.innerHTML = "";
+
+    columns.forEach(
+        (column,index) => {
+
+            const th =
+                document.createElement(
+                    "th"
+                );
+
+            th.draggable =
+                true;
+
+            th.dataset.index =
+                index;
+
+            th.dataset.column =
+                column;
+
+            th.title =
+                "Drag to move • Double-click to rename";
+
+            th.addEventListener(
+                "dragstart",
+                handleDragStart
+            );
+
+            th.addEventListener(
+                "dragover",
+                handleDragOver
+            );
+
+            th.addEventListener(
+                "drop",
+                handleDrop
+            );
+
+            th.addEventListener(
+                "dragend",
+                handleDragEnd
+            );
+
+            th.addEventListener(
+                "dblclick",
+                function(event) {
+
+                    event.stopPropagation();
+
+                    startHeaderEdit(
+                        th,
+                        index
+                    );
+
+                }
+            );
+
+            const content =
+                document.createElement(
+                    "div"
+                );
+
+            content.className =
+                "header-content";
+
+            const title =
+                document.createElement(
+                    "span"
+                );
+
+            title.textContent =
+                column;
+
+            const icon =
+                document.createElement(
+                    "span"
+                );
+
+            icon.className =
+                "sort-icon";
+
+            icon.textContent =
+                "↕";
+
+            content.appendChild(
+                title
+            );
+
+            content.appendChild(
+                icon
+            );
+
+            content.addEventListener(
+                "click",
+                function() {
+
+                    sortTable(index);
+
+                }
+            );
+
+            th.appendChild(
+                content
+            );
+
+            header.appendChild(
+                th
+            );
+
+            const filterTh =
+                document.createElement(
+                    "th"
+                );
+
+            const input =
+                document.createElement(
+                    "input"
+                );
+
+            input.type =
+                "text";
+
+            input.className =
+                "column-filter";
+
+            input.placeholder =
+                "Filter...";
+
+            input.dataset.column =
+                index;
+
+            input.dataset.columnName =
+                column;
+
+            input.addEventListener(
+                "input",
+                renderTable
+            );
+
+            filterTh.appendChild(
+                input
+            );
+
+            filterRow.appendChild(
+                filterTh
+            );
+
+        }
+    );
+
+    table.style.display =
+        "table";
+
+    document.getElementById(
+        "emptyState"
+    ).style.display =
+        "none";
+
+    applyColumnVisibility();
+
+    updateSortIcons();
+
+}
+
+/* ============================================================
+EDIT TABLE HEADER
+============================================================ */
+
+function startHeaderEdit(
+    th,
+    index
+) {
+
+    if (
+        th.classList.contains(
+            "header-editing"
+        )
+    ) {
+
+        return;
+
+    }
+
+    const oldName =
+        columns[index];
+
+    if (!oldName) return;
+
+    th.classList.add(
+        "header-editing"
+    );
+
+    th.draggable =
+        false;
+
+    th.innerHTML =
+        "";
+
+    const input =
+        document.createElement(
+            "input"
+        );
+
+    input.type =
+        "text";
+
+    input.className =
+        "header-edit-input";
+
+    input.value =
+        oldName;
+
+    th.appendChild(
+        input
+    );
+
+    input.focus();
+
+    input.select();
+
+    let finished =
+        false;
+
+    function finishHeaderEdit(save) {
+
+        if (finished) {
+
+            return;
+
+        }
+
+        finished = true;
+
+        const newName =
+            input.value.trim();
+
+        if (!save) {
+
+            columns[index] =
+                oldName;
+
+        }
+        else {
+
+            if (!newName) {
+
+                alert(
+                    "Column name cannot be empty."
+                );
+
+                columns[index] =
+                    oldName;
+
+            }
+            else {
+
+                const duplicate =
+                    columns.some(
+                        (column,columnIndex) =>
+                            columnIndex !== index &&
+                            normalizeHeader(
+                                column
+                            ) ===
+                            normalizeHeader(
+                                newName
+                            )
+                    );
+
+                if (duplicate) {
+
+                    alert(
+                        "এই নামে Column already আছে।"
+                    );
+
+                    columns[index] =
+                        oldName;
+
+                }
+                else {
+
+                    renameColumnData(
+                        oldName,
+                        newName
+                    );
+
+                    columns[index] =
+                        newName;
+
+                }
+
+            }
+
+        }
+
+        th.classList.remove(
+            "header-editing"
+        );
+
+        th.draggable =
+            true;
+
+        createDynamicTable();
+
+        createColumnMenu();
+
+        renderTable();
+
+    }
+
+    input.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Enter"
+            ) {
+
+                event.preventDefault();
+
+                finishHeaderEdit(true);
+
+            }
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                event.preventDefault();
+
+                finishHeaderEdit(false);
+
+            }
+
+        }
+    );
+
+    input.addEventListener(
+        "blur",
+        function() {
+
+            finishHeaderEdit(true);
+
+        }
+    );
+
+}
+
+/* ============================================================
+RENAME COLUMN DATA
+============================================================ */
+
+function renameColumnData(
+    oldName,
+    newName
+) {
+
+    if (
+        oldName === newName
+    ) {
+
+        return;
+
+    }
+
+    originalData.forEach(
+        row => {
+
+            row[newName] =
+                row[oldName] ?? "";
+
+            delete row[oldName];
+
+        }
+    );
+
+    hiddenColumns =
+        new Set(
+            [...hiddenColumns].map(
+                column =>
+                    column === oldName
+                        ? newName
+                        : column
+            )
+        );
+
+    mappings.forEach(
+        mapping => {
+
+            if (
+                mapping.mainMatch ===
+                oldName
+            ) {
+
+                mapping.mainMatch =
+                    newName;
+
+            }
+
+            if (
+                mapping.newColumn ===
+                oldName
+            ) {
+
+                mapping.newColumn =
+                    newName;
+
+            }
+
+        }
+    );
+
+}
+
+/* ============================================================
+DRAG COLUMN
+============================================================ */
+
+function handleDragStart(event) {
+
+    draggedColumnIndex =
+        Number(
+            event.currentTarget.dataset.index
+        );
+
+    event.currentTarget.classList.add(
+        "dragging"
+    );
+
+    event.dataTransfer.effectAllowed =
+        "move";
+
+}
+
+function handleDragOver(event) {
+
+    event.preventDefault();
+
+    event.currentTarget.classList.add(
+        "drag-over"
+    );
+
+    event.dataTransfer.dropEffect =
+        "move";
+
+}
+
+function handleDrop(event) {
+
+    event.preventDefault();
+
+    const target =
+        event.currentTarget;
+
+    target.classList.remove(
+        "drag-over"
+    );
+
+    const targetIndex =
+        Number(
+            target.dataset.index
+        );
+
+    if (
+        draggedColumnIndex === null ||
+        draggedColumnIndex === targetIndex
+    ) {
+
+        return;
+
+    }
+
+    moveColumn(
+        draggedColumnIndex,
+        targetIndex
+    );
+
+    draggedColumnIndex =
+        null;
+
+}
+
+function handleDragEnd() {
+
+    document
+    .querySelectorAll(
+        "#tableHeader th"
+    )
+    .forEach(
+        th => {
+
+            th.classList.remove(
+                "dragging"
+            );
+
+            th.classList.remove(
+                "drag-over"
+            );
+
+        }
+    );
+
+    draggedColumnIndex =
+        null;
+
+}
+
+/* ============================================================
+MOVE COLUMN
+============================================================ */
+
+function moveColumn(
+    fromIndex,
+    toIndex
+) {
+
+    if (
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= columns.length ||
+        toIndex >= columns.length
+    ) {
+
+        return;
+
+    }
+
+    if (
+        fromIndex === toIndex
+    ) {
+
+        return;
+
+    }
+
+    const movedColumn =
+        columns.splice(
+            fromIndex,
+            1
+        )[0];
+
+    columns.splice(
+        toIndex,
+        0,
+        movedColumn
+    );
+
+    sortColumn = -1;
+
+    sortDirection = "asc";
+
+    createDynamicTable();
+
+    createColumnMenu();
+
+    renderTable();
+
+}
+
+/* ============================================================
+COLUMN MENU
+============================================================ */
+
+function createColumnMenu() {
+
+    const container =
+        document.getElementById(
+            "columnMenuItems"
+        );
+
+    container.innerHTML =
+        "";
+
+    columns.forEach(
+        (column,index) => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "column-menu-item";
+
+            const checkbox =
+                document.createElement(
+                    "input"
+                );
+
+            checkbox.type =
+                "checkbox";
+
+            checkbox.checked =
+                !hiddenColumns.has(
+                    column
+                );
+
+            checkbox.title =
+                "Show / Hide";
+
+            checkbox.addEventListener(
+                "change",
+                function() {
+
+                    if (
+                        checkbox.checked
+                    ) {
+
+                        hiddenColumns.delete(
+                            column
+                        );
+
+                    }
+                    else {
+
+                        hiddenColumns.add(
+                            column
+                        );
+
+                    }
+
+                    applyColumnVisibility();
+
+                }
+            );
+
+            const text =
+                document.createElement(
+                    "span"
+                );
+
+            text.className =
+                "column-menu-name";
+
+            text.textContent =
+                column;
+
+            const upBtn =
+                document.createElement(
+                    "button"
+                );
+
+            upBtn.type =
+                "button";
+
+            upBtn.textContent =
+                "↑";
+
+            upBtn.className =
+                "position-btn up";
+
+            if (index === 0) {
+
+                upBtn.disabled =
+                    true;
+
+            }
+
+            upBtn.onclick =
+            function(event) {
+
+                event.stopPropagation();
+
+                if (index > 0) {
+
+                    moveColumn(
+                        index,
+                        index - 1
+                    );
+
+                }
+
+            };
+
+            const downBtn =
+                document.createElement(
+                    "button"
+                );
+
+            downBtn.type =
+                "button";
+
+            downBtn.textContent =
+                "↓";
+
+            downBtn.className =
+                "position-btn down";
+
+            if (
+                index ===
+                columns.length - 1
+            ) {
+
+                downBtn.disabled =
+                    true;
+
+            }
+
+            downBtn.onclick =
+            function(event) {
+
+                event.stopPropagation();
+
+                if (
+                    index <
+                    columns.length - 1
+                ) {
+
+                    moveColumn(
+                        index,
+                        index + 1
+                    );
+
+                }
+
+            };
+
+            row.appendChild(
+                checkbox
+            );
+
+            row.appendChild(
+                text
+            );
+
+            row.appendChild(
+                upBtn
+            );
+
+            row.appendChild(
+                downBtn
+            );
+
+            container.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+function toggleColumnMenu(event) {
+
+    event.stopPropagation();
+
+    document
+    .getElementById(
+        "columnMenu"
+    )
+    .classList.toggle(
+        "show"
+    );
+
+}
+
+function applyColumnVisibility() {
+
+    const table =
+        document.getElementById(
+            "dataTable"
+        );
+
+    if (!table) return;
+
+    table
+    .querySelectorAll("tr")
+    .forEach(
+        row => {
+
+            Array.from(
+                row.children
+            )
+            .forEach(
+                (cell,index) => {
+
+                    const column =
+                        columns[index];
+
+                    cell.style.display =
+                        hiddenColumns.has(
+                            column
+                        )
+                            ? "none"
+                            : "";
+
+                }
+            );
+
+        }
+    );
+
+}
+
+/* ============================================================
+MULTIPLE FILTER
+============================================================ */
+
+function getColumnFilters() {
+
+    return Array.from(
+        document.querySelectorAll(
+            ".column-filter"
+        )
+    )
+    .map(
+        input => ({
+
+            column:
+                input.dataset.columnName,
+
+            value:
+                input.value
+                    .toLowerCase()
+                    .trim()
+
+        })
+    )
+    .filter(
+        filter =>
+            filter.column &&
+            filter.value
+    );
+
+}
+
+function rowPassesMultipleFilters(row) {
+
+    const filters =
+        getColumnFilters();
+
+    if (!filters.length) {
+
+        return true;
+
+    }
+
+    return filters.every(
+        filter => {
+
+            const value =
+                String(
+                    row[
+                        filter.column
+                    ] ?? ""
+                )
+                .toLowerCase();
+
+            const terms =
+                filter.value
+                .split(",")
+                .map(
+                    term =>
+                        term.trim()
+                )
+                .filter(Boolean);
+
+            if (!terms.length) {
+
+                return true;
+
+            }
+
+            return terms.some(
+                term =>
+                    value.includes(term)
+            );
+
+        }
+    );
+
+}
+
+/* ============================================================
+RENDER
+============================================================ */
+
+function renderTable() {
+
+    if (
+        !columns.length ||
+        !originalData.length
+    ) {
+
+        showEmpty();
+
+        return;
+
+    }
+
+    const globalSearch =
+        document.getElementById(
+            "globalSearch"
+        ).value
+        .toLowerCase()
+        .trim();
+
+    filteredData =
+        originalData.filter(
+            row => {
+
+                if (globalSearch) {
+
+                    const text =
+                        columns
+                        .map(
+                            column =>
+                                String(
+                                    row[column] ?? ""
+                                ).toLowerCase()
+                        )
+                        .join(" ");
+
+                    if (
+                        !text.includes(
+                            globalSearch
+                        )
+                    ) {
+
+                        return false;
+
+                    }
+
+                }
+
+                if (
+                    !rowPassesMultipleFilters(
+                        row
+                    )
+                ) {
+
+                    return false;
+
+                }
+
+                return true;
+
+            }
+        );
+
+    if (sortColumn >= 0) {
+
+        const column =
+            columns[sortColumn];
+
+        if (column) {
+
+            filteredData.sort(
+                (a,b) => {
+
+                    const aVal =
+                        String(
+                            a[column] ?? ""
+                        ).toLowerCase();
+
+                    const bVal =
+                        String(
+                            b[column] ?? ""
+                        ).toLowerCase();
+
+                    const result =
+                        aVal.localeCompare(
+                            bVal,
+                            undefined,
+                            {
+                                numeric: true,
+                                sensitivity: "base"
+                            }
+                        );
+
+                    return sortDirection === "asc"
+                        ? result
+                        : -result;
+
+                }
+            );
+
+        }
+
+    }
+
+    renderRows(
+        filteredData
+    );
+
+}
+
+/* ============================================================
+ROWS + CELL EDITING
+============================================================ */
+
+function renderRows(data) {
+
+    selectedRowIndex = -1;
+
+    const tbody =
+        document.getElementById(
+            "tableBody"
+        );
+
+    tbody.innerHTML =
+        "";
+
+    if (!data.length) {
+
+        const tr =
+            document.createElement(
+                "tr"
+            );
+
+        const td =
+            document.createElement(
+                "td"
+            );
+
+        td.colSpan =
+            Math.max(
+                columns.length,
+                1
+            );
+
+        td.textContent =
+            "No matching records found.";
+
+        td.style.padding =
+            "40px";
+
+        td.style.textAlign =
+            "center";
+
+        tr.appendChild(
+            td
+        );
+
+        tbody.appendChild(
+            tr
+        );
+
+    }
+    else {
+
+        const fragment =
+            document.createDocumentFragment();
+
+        data.forEach(
+            row => {
+
+                const tr =
+                    document.createElement(
+                        "tr"
+                    );
+
+                columns.forEach(
+                    column => {
+
+                        const td =
+                            document.createElement(
+                                "td"
+                            );
+
+                        const value =
+                            row[column] ?? "";
+
+                        td.textContent =
+                            value;
+
+                        td.title =
+                            "Double-click to edit";
+
+                        td.classList.add(
+                            "editable-cell"
+                        );
+
+                        td.addEventListener(
+                            "dblclick",
+                            function(event) {
+
+                                event.stopPropagation();
+
+                                startCellEdit(
+                                    td,
+                                    row,
+                                    column
+                                );
+
+                            }
+                        );
+
+                        tr.appendChild(
+                            td
+                        );
+
+                    }
+                );
+
+                fragment.appendChild(
+                    tr
+                );
+
+            }
+        );
+
+        tbody.appendChild(
+            fragment
+        );
+
+    }
+
+    document.getElementById(
+        "recordCount"
+    ).textContent =
+        data.length;
+
+    applyColumnVisibility();
+
+}
+
+/* ============================================================
+CELL EDIT
+============================================================ */
+
+function startCellEdit(
+    td,
+    row,
+    column
+) {
+
+    if (
+        td.classList.contains(
+            "editing"
+        )
+    ) {
+
+        return;
+
+    }
+
+    td.classList.add(
+        "editing"
+    );
+
+    const oldValue =
+        String(
+            row[column] ?? ""
+        );
+
+    const input =
+        document.createElement(
+            "input"
+        );
+
+    input.type =
+        "text";
+
+    input.className =
+        "cell-edit-input";
+
+    input.value =
+        oldValue;
+
+    td.innerHTML =
+        "";
+
+    td.appendChild(
+        input
+    );
+
+    input.focus();
+
+    input.select();
+
+    let finished =
+        false;
+
+    function finishEdit(save) {
+
+        if (finished) {
+
+            return;
+
+        }
+
+        finished = true;
+
+        if (save) {
+
+            const newValue =
+                input.value;
+
+            row[column] =
+                newValue;
+
+            td.textContent =
+                newValue;
+
+            td.title =
+                "Double-click to edit";
+
+        }
+        else {
+
+            td.textContent =
+                oldValue;
+
+            td.title =
+                "Double-click to edit";
+
+        }
+
+        td.classList.remove(
+            "editing"
+        );
+
+        updateEditedCellUI();
+
+    }
+
+    input.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Enter"
+            ) {
+
+                event.preventDefault();
+
+                finishEdit(true);
+
+                input.blur();
+
+            }
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                event.preventDefault();
+
+                finishEdit(false);
+
+                input.blur();
+
+            }
+
+        }
+    );
+
+    input.addEventListener(
+        "blur",
+        function() {
+
+            finishEdit(true);
+
+        }
+    );
+
+}
+
+/* ============================================================
+AFTER EDIT
+============================================================ */
+
+function updateEditedCellUI() {
+
+    renderTable();
+
+}
+
+/* ============================================================
+SORT
+============================================================ */
+
+function sortTable(index) {
+
+    if (
+        sortColumn === index
+    ) {
+
+        sortDirection =
+            sortDirection === "asc"
+                ? "desc"
+                : "asc";
+
+    }
+    else {
+
+        sortColumn =
+            index;
+
+        sortDirection =
+            "asc";
+
+    }
+
+    updateSortIcons();
+
+    renderTable();
+
+}
+
+function updateSortIcons() {
+
+    document
+    .querySelectorAll(
+        "#tableHeader th"
+    )
+    .forEach(
+        (th,index) => {
+
+            const icon =
+                th.querySelector(
+                    ".sort-icon"
+                );
+
+            if (!icon) return;
+
+            if (
+                index !== sortColumn
+            ) {
+
+                icon.textContent =
+                    "↕";
+
+            }
+            else {
+
+                icon.textContent =
+                    sortDirection === "asc"
+                        ? "↑"
+                        : "↓";
+
+            }
+
+        }
+    );
+
+}
+
+/* ============================================================
+FILTER
+============================================================ */
+
+function applyTopFilters() {
+
+    reportName =
+        getReportName();
+
+    renderTable();
+
+}
+
+function clearAllFilters() {
+
+    document.getElementById(
+        "globalSearch"
+    ).value =
+        "";
+
+    document.getElementById(
+        "reportName"
+    ).value =
+        "DBL Delivery Report";
+
+    reportName =
+        "DBL Delivery Report";
+
+    clearColumnFilters();
+
+}
+
+function clearColumnFilters() {
+
+    document
+    .querySelectorAll(
+        ".column-filter"
+    )
+    .forEach(
+        input => {
+
+            input.value =
+                "";
+
+        }
+    );
+
+    renderTable();
+
+}
+
+function resetFiltersOnly() {
+
+    document.getElementById(
+        "globalSearch"
+    ).value =
+        "";
+
+    sortColumn =
+        -1;
+
+    sortDirection =
+        "asc";
+
+    selectedRowIndex =
+        -1;
+
+    document
+    .querySelectorAll(
+        ".column-filter"
+    )
+    .forEach(
+        input => {
+
+            input.value =
+                "";
+
+        }
+    );
+
+}
+
+/* ============================================================
+EMPTY
+============================================================ */
+
+function showEmpty() {
+
+    selectedRowIndex =
+        -1;
+
+    document.getElementById(
+        "dataTable"
+    ).style.display =
+        "none";
+
+    document.getElementById(
+        "emptyState"
+    ).style.display =
+        "flex";
+
+    document.getElementById(
+        "recordCount"
+    ).textContent =
+        "0";
+
+}
+
+/* ============================================================
+CLOCK
+============================================================ */
+
+function updateClock() {
+
+    const now =
+        new Date();
+
+    let hours =
+        now.getHours();
+
+    const minutes =
+        String(
+            now.getMinutes()
+        ).padStart(2,"0");
+
+    const seconds =
+        String(
+            now.getSeconds()
+        ).padStart(2,"0");
+
+    const ampm =
+        hours >= 12
+            ? "pm"
+            : "am";
+
+    hours =
+        hours % 12 || 12;
+
+    document.getElementById(
+        "currentTime"
+    ).textContent =
+        `${String(
+            now.getDate()
+        ).padStart(2,"0")}-` +
+        `${String(
+            now.getMonth()+1
+        ).padStart(2,"0")}-` +
+        `${now.getFullYear()} ` +
+        `${String(
+            hours
+        ).padStart(2,"0")}:${minutes}:${seconds} ${ampm}`;
+
+}
+
+/* ============================================================
+SAVE EXCEL
+============================================================ */
+
+function saveExcel() {
+
+    if (!originalData.length) {
+
+        alert(
+            "আগে 1st Excel upload করুন।"
+        );
+
+        return;
+
+    }
+
+    reportName =
+        getReportName();
+
+    const exportData =
+        originalData.map(
+            row => {
+
+                const obj = {};
+
+                columns.forEach(
+                    column => {
+
+                        obj[column] =
+                            row[column] ?? "";
+
+                    }
+                );
+
+                return obj;
+
+            }
+        );
+
+    const worksheet =
+        XLSX.utils.json_to_sheet(
+            exportData,
+            {
+                header: columns
+            }
+        );
+
+    worksheet["!cols"] =
+        columns.map(
+            column => {
+
+                let max =
+                    column.length;
+
+                exportData
+                .slice(0,100)
+                .forEach(
+                    row => {
+
+                        const length =
+                            String(
+                                row[column] ?? ""
+                            ).length;
+
+                        if (
+                            length > max
+                        ) {
+
+                            max = length;
+
+                        }
+
+                    }
+                );
+
+                return {
+                    wch:
+                        Math.min(
+                            Math.max(
+                                max + 2,
+                                10
+                            ),
+                            45
+                        )
+                };
+
+            }
+        );
+
+    const workbook =
+        XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Delivery Data"
+    );
+
+    const date =
+        new Date();
+
+    const safeReportName =
+        reportName
+        .replace(
+            /[\\/:*?"<>|]/g,
+            "_"
+        )
+        .trim();
+
+    const filename =
+        `${safeReportName || "DBL_Delivery_Report"}_` +
+        `${date.getFullYear()}-` +
+        `${String(
+            date.getMonth()+1
+        ).padStart(2,"0")}-` +
+        `${String(
+            date.getDate()
+        ).padStart(2,"0")}.xlsx`;
+
+    XLSX.writeFile(
+        workbook,
+        filename
+    );
+
+}
+
+/* ============================================================
+PRINT
+============================================================ */
+
+function printTable() {
+
+    renderTable();
+
+    if (!originalData.length) {
+
+        alert(
+            "Please upload 1st Excel first."
+        );
+
+        return;
+
+    }
+
+    if (!filteredData.length) {
+
+        alert(
+            "No filtered data available to print."
+        );
+
+        return;
+
+    }
+
+    reportName =
+        getReportName();
+
+    const visibleIndexes =
+        columns
+        .map(
+            (column,index) =>
+                index
+        )
+        .filter(
+            index =>
+                !hiddenColumns.has(
+                    columns[index]
+                )
+        );
+
+    if (!visibleIndexes.length) {
+
+        alert(
+            "Please show at least one column."
+        );
+
+        return;
+
+    }
+
+    const printWindow =
+        window.open(
+            "",
+            "_blank"
+        );
+
+    if (!printWindow) {
+
+        alert(
+            "Popup blocked. Please allow popup."
+        );
+
+        return;
+
+    }
+
+    let html = `
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>${escapeHtml(
+    reportName
+)}</title>
+
+<style>
+
+@page {
+    size: A4 landscape;
+    margin: 8mm;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+}
+
+.company-title {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.report-title {
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #5ea2a7 !important;
+    color: #0000c8 !important;
+    border: 1px solid #777;
+    padding: 5px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+td {
+    border: 1px solid #999;
+    padding: 5px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+tr:nth-child(even) td {
+    background: #f5f5f5 !important;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="company-title">
+DBL Group - DB Trims Ltd.
+</div>
+
+<div class="report-title">
+${escapeHtml(reportName)}
+</div>
+
+<p>
+Records: ${filteredData.length}
+</p>
+
+<table>
+
+<thead>
+
+<tr>
+`;
+
+    visibleIndexes.forEach(
+        index => {
+
+            html +=
+                `<th>${escapeHtml(
+                    columns[index]
+                )}</th>`;
+
+        }
+    );
+
+    html += `
+
+</tr>
+
+</thead>
+
+<tbody>
+
+`;
+
+    filteredData.forEach(
+        row => {
+
+            html +=
+                "<tr>";
+
+            visibleIndexes.forEach(
+                index => {
+
+                    html +=
+                        `<td>${escapeHtml(
+                            row[
+                                columns[index]
+                            ] ?? ""
+                        )}</td>`;
+
+                }
+            );
+
+            html +=
+                "</tr>";
+
+        }
+    );
+
+    html += `
+
+</tbody>
+
+</table>
+
+</body>
+
+</html>
+
+`;
+
+    printWindow.document.open();
+
+    printWindow.document.write(
+        html
+    );
+
+    printWindow.document.close();
+
+    setTimeout(
+        () => {
+
+            printWindow.print();
+
+        },
+        500
+    );
+
+}
+
+/* ============================================================
+ESCAPE
+============================================================ */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+</script>
+
+</body>
+
+</html>
