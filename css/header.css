@@ -1,0 +1,170 @@
+/* =========================================
+   HEADER
+========================================= */
+
+.site-header {
+    position: relative;
+    z-index: 10;
+}
+
+
+/* =========================================
+   TOP BAR
+========================================= */
+
+.header-top {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 16px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            to right,
+            #319a82,
+            #42a85c,
+            #82c83b
+        );
+}
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+.logo-circle {
+    display: flex;
+
+    width: 30px;
+    height: 30px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    color: #319a82;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+
+.logo-text {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+/* =========================================
+   DATE / TIME
+========================================= */
+
+.header-date-time {
+    display: none;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================
+   CURRENT PAGE
+========================================= */
+
+.header-page {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+.main-nav {
+    display: flex;
+
+    height: 42px;
+
+    align-items: stretch;
+
+    overflow-x: auto;
+
+    border-bottom: 1px solid #1d2124;
+
+    background: #252a2d;
+}
+
+
+.nav-link {
+    display: flex;
+
+    flex-shrink: 0;
+
+    align-items: center;
+
+    padding: 0 20px;
+
+    border-right: 1px solid #343a3d;
+
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+
+/* =========================================
+   ACTIVE NAV
+========================================= */
+
+.nav-link.active {
+    border-bottom: 2px solid #42a85c;
+
+    background: #111619;
+}
+
+
+/* =========================================
+   HOVER
+========================================= */
+
+.nav-link:not(.active):hover {
+    background: #343a3d;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (min-width: 640px) {
+
+    .header-date-time {
+        display: block;
+    }
+
+}

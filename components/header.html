@@ -1,9 +1,185 @@
-<header class="header">
-    <h2>My App</h2>
+<header class="relative z-10">
 
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="#">About</a>
-        <a href="#">Contact</a>
+    <!-- TOP BAR -->
+    <div
+        class="
+            flex
+            min-h-12
+            items-center
+            justify-between
+            px-4
+            text-white
+            bg-gradient-to-r
+            from-[#319a82]
+            via-[#42a85c]
+            to-[#82c83b]
+        "
+    >
+
+        <!-- LOGO -->
+        <div class="flex items-center gap-2">
+
+            <div
+                class="
+                    flex
+                    h-[30px]
+                    w-[30px]
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-white
+                    text-[11px]
+                    font-bold
+                    text-[#319a82]
+                    shadow-sm
+                "
+            >
+                SG
+            </div>
+
+            <div class="text-sm font-bold">
+                SH Group
+            </div>
+
+        </div>
+
+
+        <!-- DATE TIME -->
+        <div
+            id="headerDateTime"
+            class="
+                hidden
+                text-xs
+                font-bold
+                sm:block
+            "
+        ></div>
+
+
+        <!-- PAGE -->
+        <div class="text-xs font-bold">
+            Home
+        </div>
+
+    </div>
+
+
+    <!-- NAVIGATION -->
+    <nav
+        class="
+            flex
+            h-[42px]
+            items-stretch
+            overflow-x-auto
+            border-b
+            border-[#1d2124]
+            bg-[#252a2d]
+        "
+    >
+
+        <a
+            href="index.html"
+            class="
+                flex
+                shrink-0
+                items-center
+                border-r
+                border-[#343a3d]
+                border-b-2
+                border-b-[#42a85c]
+                bg-[#111619]
+                px-5
+                text-xs
+                font-bold
+                text-white
+                no-underline
+            "
+        >
+            Home
+        </a>
+
+
+        <a
+            href="excel.html"
+            class="
+                flex
+                shrink-0
+                items-center
+                border-r
+                border-[#343a3d]
+                px-5
+                text-xs
+                font-bold
+                text-white
+                no-underline
+                transition
+                hover:bg-[#343a3d]
+            "
+        >
+            Excel Editing
+        </a>
+
+
+        <a
+            href="gatepass.html"
+            class="
+                flex
+                shrink-0
+                items-center
+                border-r
+                border-[#343a3d]
+                px-5
+                text-xs
+                font-bold
+                text-white
+                no-underline
+                transition
+                hover:bg-[#343a3d]
+            "
+        >
+            OGP Print
+        </a>
+
+         <a
+            href="vehicleSummary.html"
+            class="
+                flex
+                shrink-0
+                items-center
+                border-r
+                border-[#343a3d]
+                px-5
+                text-xs
+                font-bold
+                text-white
+                no-underline
+                transition
+                hover:bg-[#343a3d]
+            "
+        >
+            Vehicle Summary
+        </a>
+
+        <a
+            href="converter.html"
+            class="
+                flex
+                shrink-0
+                items-center
+                border-r
+                border-[#343a3d]
+                px-5
+                text-xs
+                font-bold
+                text-white
+                no-underline
+                transition
+                hover:bg-[#343a3d]
+            "
+        >
+            Converter
+        </a>
+
     </nav>
+
 </header>

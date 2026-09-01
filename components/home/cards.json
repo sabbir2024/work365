@@ -1,0 +1,57 @@
+[
+    {
+        "title": "Excel Editing",
+        "description": "Open Excel Editing tools and manage your Excel files.",
+        "icon": "📊",
+        "color": "#319a82",
+        "iconBg": "#e8f5e9",
+        "button": "Open Tool →",
+        "link": "excel.html"
+    },
+    {
+        "title": "OGP Print",
+        "description": "Generate Delivery Challan, Delivery Gate Pass and Gate Pass.",
+        "icon": "🖨️",
+        "color": "#007bff",
+        "iconBg": "#e3f2fd",
+        "button": "Open Tool →",
+        "link": "gatepass.html"
+    },
+    {
+        "title": "Vehicle Summary",
+        "description": "Gate Pass Vehicle Wise Summary",
+        "icon": "🚚",
+        "color": "#007bff",
+        "iconBg": "#e3f2fd",
+        "button": "Open Tool →",
+        "link": "vehicleSummary.html"
+    },
+    {
+        "title": "Converter",
+        "description": "Convert files, values and information quickly.",
+        "icon": "🔄",
+        "color": "#9c27b0",
+        "iconBg": "#f3e5f5",
+        "button": "Open Tool →",
+        "link": "converter.html"
+    },
+    {
+        "title": "Sale",
+        "description": "Access sales tools and manage sales information.",
+        "icon": "🛒",
+        "color": "#ff9800",
+        "iconBg": "#fff3e0",
+        "button": "Open Tool →",
+        "link": "sale.html"
+    },
+    {
+        "title": "Md. Sabbir Hossen",
+        "description": "View profile and personal information.",
+        "icon": "👤",
+        "color": "#6f42c1",
+        "iconBg": "#f3e5f5",
+        "button": "View Profile →",
+        "link": "sabbir.html",
+        "fullWidth": true
+    }
+]
