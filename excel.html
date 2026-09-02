@@ -1334,6 +1334,13 @@ onclick="openMappingModal()">
 Mapping ⚙
 </button>
 
+<button 
+    class="btn" 
+    style="background:#0d6efd;" 
+    onclick="openCalculateModal()">
+    🧮 Calculate
+</button>
+
 <button
 class="btn purple"
 onclick="addManualColumn()">
@@ -1520,6 +1527,130 @@ Apply Mapping
 
 </div>
 
+<!-- ================= CALCULATE MODAL ================= -->
+
+<div 
+    class="modal-overlay" 
+    id="calculateModal">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <div class="modal-title">
+                Calculate Columns
+            </div>
+
+            <button 
+                class="modal-close"
+                onclick="closeCalculateModal()">
+                ×
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div class="mapping-info">
+
+                <b>Calculate:</b><br>
+
+                1. প্রথম Column select করুন।<br>
+                2. Operator select করুন।<br>
+                3. দ্বিতীয় Column select করুন।<br>
+                4. Result Column-এর নাম দিন।<br><br>
+
+                <b>Example:</b><br>
+
+                Quantity × Rate → Amount
+
+            </div>
+
+            <div class="mapping-row">
+
+                <div>
+                    <label>
+                        First Column
+                    </label>
+
+                    <select id="calculateColumn1">
+                    </select>
+                </div>
+
+                <div class="mapping-arrow">
+                    →
+                </div>
+
+                <div>
+                    <label>
+                        Operator
+                    </label>
+
+                    <select id="calculateOperator">
+
+                        <option value="+">
+                            +
+                        </option>
+
+                        <option value="-">
+                            −
+                        </option>
+
+                        <option value="*">
+                            ×
+                        </option>
+
+                        <option value="/">
+                            ÷
+                        </option>
+
+                    </select>
+                </div>
+
+                <div>
+                    <label>
+                        Second Column
+                    </label>
+
+                    <select id="calculateColumn2">
+                    </select>
+                </div>
+
+                <div>
+                    <label>
+                        Result Column
+                    </label>
+
+                    <input
+                        type="text"
+                        id="calculateResultColumn"
+                        placeholder="Result column name">
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                class="btn clear"
+                onclick="closeCalculateModal()">
+                Cancel
+            </button>
+
+            <button
+                class="btn save"
+                onclick="applyCalculation()">
+                Apply Calculation
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 <script>
 
 /* ============================================================
@@ -1622,8 +1753,9 @@ let mappings = [];
 
 let draggedColumnIndex = null;
 
-let reportName = "DBL Delivery Report";
+let reportName = "";
 
+let calculations = [];
 /* ================= NEW: SELECTED ROW ================= */
 
 let selectedRowIndex = -1;
@@ -2599,6 +2731,7 @@ function openMappingModal() {
 
 }
 
+
 function closeMappingModal() {
 
     document
@@ -2740,6 +2873,10 @@ function addMappingRow(existing = null) {
     );
 
 }
+
+
+
+
 
 /* ============================================================
 SELECT OPTIONS
@@ -5094,6 +5231,420 @@ function escapeHtml(value) {
         );
 
 }
+
+/* ============================================================
+CALCULATE
+============================================================ */
+
+function openCalculateModal() {
+
+    if (!originalData.length) {
+
+        alert(
+            "আগে 1st Excel upload করুন।"
+        );
+
+        return;
+    }
+
+    const column1 =
+        document.getElementById(
+            "calculateColumn1"
+        );
+
+    const column2 =
+        document.getElementById(
+            "calculateColumn2"
+        );
+
+    column1.innerHTML = "";
+    column2.innerHTML = "";
+
+    const empty1 =
+        document.createElement("option");
+
+    empty1.value = "";
+    empty1.textContent = "-- Select --";
+
+    column1.appendChild(empty1);
+
+    const empty2 =
+        document.createElement("option");
+
+    empty2.value = "";
+    empty2.textContent = "-- Select --";
+
+    column2.appendChild(empty2);
+
+    columns.forEach(
+        column => {
+
+            const option1 =
+                document.createElement("option");
+
+            option1.value =
+                column;
+
+            option1.textContent =
+                column;
+
+            column1.appendChild(
+                option1
+            );
+
+            const option2 =
+                document.createElement("option");
+
+            option2.value =
+                column;
+
+            option2.textContent =
+                column;
+
+            column2.appendChild(
+                option2
+            );
+
+        }
+    );
+
+    document.getElementById(
+        "calculateOperator"
+    ).value = "+";
+
+    document.getElementById(
+        "calculateResultColumn"
+    ).value = "";
+
+    document.getElementById(
+        "calculateModal"
+    ).classList.add("show");
+
+}
+
+
+function closeCalculateModal() {
+
+    document.getElementById(
+        "calculateModal"
+    ).classList.remove("show");
+
+}
+
+
+function parseCalculationNumber(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        String(value).trim() === ""
+    ) {
+
+        return 0;
+
+    }
+
+    let text =
+        String(value)
+        .trim()
+        .replace(/,/g, "");
+
+    if (
+        /^[+-]?\d+(\.\d+)?e[+-]?\d+$/i.test(text)
+    ) {
+
+        text =
+            expandScientificNotation(text);
+
+    }
+
+    const number =
+        Number(text);
+
+    if (Number.isFinite(number)) {
+
+        return number;
+
+    }
+
+    return NaN;
+
+}
+
+
+function formatCalculationResult(value) {
+
+    if (!Number.isFinite(value)) {
+
+        return "";
+
+    }
+
+    if (
+        Number.isInteger(value)
+    ) {
+
+        return String(value);
+
+    }
+
+    return String(
+        Number(
+            value.toFixed(10)
+        )
+    );
+
+}
+
+
+function applyCalculation() {
+
+    if (!originalData.length) {
+
+        alert(
+            "আগে 1st Excel upload করুন।"
+        );
+
+        return;
+
+    }
+
+    const firstColumn =
+        document.getElementById(
+            "calculateColumn1"
+        ).value;
+
+    const secondColumn =
+        document.getElementById(
+            "calculateColumn2"
+        ).value;
+
+    const operator =
+        document.getElementById(
+            "calculateOperator"
+        ).value;
+
+    let resultColumn =
+        document.getElementById(
+            "calculateResultColumn"
+        ).value.trim();
+
+
+    if (!firstColumn) {
+
+        alert(
+            "First Column select করুন।"
+        );
+
+        return;
+
+    }
+
+
+    if (!secondColumn) {
+
+        alert(
+            "Second Column select করুন।"
+        );
+
+        return;
+
+    }
+
+
+    if (!resultColumn) {
+
+        alert(
+            "Result Column-এর নাম দিন।"
+        );
+
+        return;
+
+    }
+
+
+    const duplicate =
+        columns.some(
+            column =>
+                normalizeHeader(column) ===
+                normalizeHeader(resultColumn)
+        );
+
+
+    if (duplicate) {
+
+        alert(
+            "এই নামে Column already আছে।"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        firstColumn === resultColumn ||
+        secondColumn === resultColumn
+    ) {
+
+        alert(
+            "Result Column-এর নাম input column-এর সাথে একই হতে পারবে না।"
+        );
+
+        return;
+
+    }
+
+
+    originalData.forEach(
+        row => {
+
+            const firstValue =
+                parseCalculationNumber(
+                    row[firstColumn]
+                );
+
+            const secondValue =
+                parseCalculationNumber(
+                    row[secondColumn]
+                );
+
+
+            if (
+                Number.isNaN(firstValue) ||
+                Number.isNaN(secondValue)
+            ) {
+
+                row[resultColumn] = "";
+
+                return;
+
+            }
+
+
+            let result;
+
+
+            switch (operator) {
+
+                case "+":
+
+                    result =
+                        firstValue +
+                        secondValue;
+
+                    break;
+
+
+                case "-":
+
+                    result =
+                        firstValue -
+                        secondValue;
+
+                    break;
+
+
+                case "*":
+
+                    result =
+                        firstValue *
+                        secondValue;
+
+                    break;
+
+
+                case "/":
+
+                    if (
+                        secondValue === 0
+                    ) {
+
+                        row[resultColumn] =
+                            "";
+
+                        return;
+
+                    }
+
+                    result =
+                        firstValue /
+                        secondValue;
+
+                    break;
+
+
+                default:
+
+                    row[resultColumn] =
+                        "";
+
+                    return;
+
+            }
+
+
+            row[resultColumn] =
+                formatCalculationResult(
+                    result
+                );
+
+        }
+    );
+
+
+    columns.push(
+        resultColumn
+    );
+
+
+    calculations.push({
+
+        firstColumn:
+            firstColumn,
+
+        secondColumn:
+            secondColumn,
+
+        operator:
+            operator,
+
+        resultColumn:
+            resultColumn
+
+    });
+
+
+    createDynamicTable();
+
+    createColumnMenu();
+
+    renderTable();
+
+    closeCalculateModal();
+
+
+    document.getElementById(
+        "excelStatus"
+    ).textContent =
+        `${originalData.length} rows loaded • Calculation applied`;
+
+
+}
+document
+.getElementById("calculateModal")
+.addEventListener(
+    "click",
+    function(event) {
+
+        if (event.target === this) {
+
+            closeCalculateModal();
+
+        }
+
+    }
+);
 
 </script>
 <script src="js/script.js"></script>
