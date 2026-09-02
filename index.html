@@ -12,10 +12,8 @@
 
     <title>Work 365</title>
 
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
 
     <!-- Main CSS -->
     <link
@@ -26,7 +24,61 @@
 </head>
 
 
-<body>
+<body class="bg-gray-100">
+
+    <!-- =========================================
+         PIN LOCK
+    ========================================== -->
+
+    <div
+        id="pinLock"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900"
+    >
+
+        <div class="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
+
+            <div class="mb-6 text-center">
+
+                <h1 class="text-2xl font-bold text-gray-800">
+                    Work 365
+                </h1>
+
+                <p class="mt-2 text-sm text-gray-500">
+                    Enter PIN to continue
+                </p>
+
+            </div>
+
+
+            <input
+                id="pinInput"
+                type="password"
+                inputmode="numeric"
+                maxlength="6"
+                placeholder="Enter PIN"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 text-center text-lg tracking-[0.5em] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            >
+
+
+            <button
+                onclick="checkPIN()"
+                class="mt-4 w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700"
+            >
+                Unlock
+            </button>
+
+
+            <p
+                id="pinError"
+                class="mt-3 hidden text-center text-sm text-red-500"
+            >
+                Incorrect PIN. Please try again.
+            </p>
+
+        </div>
+
+    </div>
+
 
     <!-- =========================================
          HEADER
@@ -58,6 +110,63 @@
     ========================================== -->
 
     <script src="js/script.js"></script>
+
+
+    <!-- =========================================
+         PIN LOCK SCRIPT
+    ========================================== -->
+
+    <script>
+
+        const CORRECT_PIN = "122333";
+
+
+        function checkPIN() {
+
+            const pinInput = document.getElementById("pinInput");
+            const pinError = document.getElementById("pinError");
+            const pinLock = document.getElementById("pinLock");
+
+            if (pinInput.value === CORRECT_PIN) {
+
+                pinLock.style.display = "none";
+                pinError.classList.add("hidden");
+
+                // Remember unlock for this browser session
+                sessionStorage.setItem("work365_unlocked", "true");
+
+            } else {
+
+                pinError.classList.remove("hidden");
+
+                pinInput.value = "";
+                pinInput.focus();
+
+            }
+
+        }
+
+
+        // Allow Enter key to unlock
+        document
+            .getElementById("pinInput")
+            .addEventListener("keydown", function (event) {
+
+                if (event.key === "Enter") {
+                    checkPIN();
+                }
+
+            });
+
+
+        // Keep unlocked during the current browser session
+        if (sessionStorage.getItem("work365_unlocked") === "true") {
+
+            document.getElementById("pinLock").style.display = "none";
+
+        }
+
+    </script>
 
 </body>
 
