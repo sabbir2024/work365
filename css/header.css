@@ -1,170 +1,229 @@
 /* =========================================
-   HEADER
+HEADER
 ========================================= */
 
 .site-header {
-    position: relative;
-    z-index: 10;
+position: relative;
+z-index: 10;
 }
 
-
 /* =========================================
-   TOP BAR
+TOP BAR
 ========================================= */
 
 .header-top {
-    display: flex;
-    min-height: 48px;
-    align-items: center;
-    justify-content: space-between;
+display: flex;
+min-height: 48px;
+align-items: center;
+justify-content: space-between;
 
-    padding: 0 16px;
 
-    color: #ffffff;
+padding: 0 16px;
 
-    background:
-        linear-gradient(
-            to right,
-            #319a82,
-            #42a85c,
-            #82c83b
-        );
+color: #ffffff;
+
+background:
+    linear-gradient(
+        to right,
+        #319a82,
+        #42a85c,
+        #82c83b
+    );
+
+
 }
 
-
 /* =========================================
-   LOGO
+LOGO
 ========================================= */
 
 .header-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+display: flex;
+align-items: center;
+gap: 8px;
 }
-
 
 .logo-circle {
-    display: flex;
+display: flex;
 
-    width: 30px;
-    height: 30px;
 
-    align-items: center;
-    justify-content: center;
+width: 30px;
+height: 30px;
 
-    border-radius: 50%;
+align-items: center;
+justify-content: center;
 
-    background: #ffffff;
+border-radius: 50%;
 
-    color: #319a82;
+background: #ffffff;
 
-    font-size: 11px;
-    font-weight: 700;
+color: #319a82;
 
-    box-shadow:
-        0 1px 4px rgba(0, 0, 0, 0.12);
+font-size: 11px;
+font-weight: 700;
+
+box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.12);
+
+
 }
-
 
 .logo-text {
-    font-size: 14px;
-    font-weight: 700;
+font-size: 14px;
+font-weight: 700;
 }
 
-
 /* =========================================
-   DATE / TIME
+DATE / TIME
 ========================================= */
 
 .header-date-time {
-    display: none;
-
-    font-size: 12px;
-    font-weight: 700;
+font-size: 12px;
+font-weight: 700;
 }
 
-
 /* =========================================
-   CURRENT PAGE
+CURRENT PAGE
 ========================================= */
 
 .header-page {
-    font-size: 12px;
-    font-weight: 700;
+font-size: 12px;
+font-weight: 700;
 }
 
-
 /* =========================================
-   NAVIGATION
+NAVIGATION
 ========================================= */
 
 .main-nav {
-    display: flex;
+display: flex;
 
-    height: 42px;
 
-    align-items: stretch;
+height: 42px;
 
-    overflow-x: auto;
+align-items: stretch;
 
-    border-bottom: 1px solid #1d2124;
+overflow-x: auto;
 
-    background: #252a2d;
+border-bottom: 1px solid #1d2124;
+
+background: #252a2d;
+
+
 }
-
-
-.nav-link {
-    display: flex;
-
-    flex-shrink: 0;
-
-    align-items: center;
-
-    padding: 0 20px;
-
-    border-right: 1px solid #343a3d;
-
-    color: #ffffff;
-
-    font-size: 12px;
-    font-weight: 700;
-
-    text-decoration: none;
-
-    transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease;
-}
-
 
 /* =========================================
-   ACTIVE NAV
+NAV LINK
+========================================= */
+
+.nav-link {
+display: flex;
+
+
+flex-shrink: 0;
+
+align-items: center;
+
+padding: 0 20px;
+
+border-right: 1px solid #343a3d;
+
+color: #ffffff;
+
+font-size: 12px;
+font-weight: 700;
+
+text-decoration: none;
+
+transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+
+
+}
+
+/* =========================================
+ACTIVE NAV
 ========================================= */
 
 .nav-link.active {
-    border-bottom: 2px solid #42a85c;
+border-bottom: 2px solid #42a85c;
 
-    background: #111619;
+
+background: #111619;
+
+color: #ffffff;
+
+
 }
 
-
 /* =========================================
-   HOVER
+HOVER
 ========================================= */
 
 .nav-link:not(.active):hover {
-    background: #343a3d;
+background: #343a3d;
+}
+
+/* =========================================
+SCROLLBAR
+========================================= */
+
+.main-nav::-webkit-scrollbar {
+height: 4px;
+}
+
+.main-nav::-webkit-scrollbar-track {
+background: #252a2d;
+}
+
+.main-nav::-webkit-scrollbar-thumb {
+background: #42a85c;
+border-radius: 10px;
+}
+
+/* =========================================
+MOBILE
+========================================= */
+
+@media (max-width: 639px) {
+
+
+.header-date-time {
+    display: none;
 }
 
 
+}
+
 /* =========================================
-   MOBILE
+DESKTOP
 ========================================= */
 
 @media (min-width: 640px) {
 
-    .header-date-time {
-        display: block;
-    }
+
+.header-date-time {
+    display: block;
+}
+
+
+}
+
+/* =========================================
+PRINT
+========================================= */
+
+@media print {
+
+#header {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+.site-header {
+    display: none !important;
+    visibility: hidden !important;
+}
 
 }

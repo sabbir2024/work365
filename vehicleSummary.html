@@ -10,92 +10,2701 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Vehicle Summary - SH Group</title>
+    <title>Gate Pass Vehicle Wise Summary</title>
 
-    <!-- Tailwind CSS -->
+
+    <!-- =================================================
+         TAILWIND CSS
+    ================================================== -->
+
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Main CSS -->
-    <link
-        rel="stylesheet"
-        href="css/index.css"
-    >
+
+    <!-- =================================================
+         XLSX
+    ================================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+
+    <style>
+
+        @media print {
+
+            @page {
+                size: A4 portrait;
+                margin: 7mm;
+            }
+
+            html,
+            body {
+                width: 210mm;
+                background: white !important;
+                margin: 0;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .report-wrapper {
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+
+            .report-actions {
+                display: none !important;
+            }
+
+            .report-header {
+                margin-bottom: 8px !important;
+            }
+
+            .report-header h2 {
+                font-size: 18px !important;
+            }
+
+            .report-header p {
+                font-size: 8px !important;
+            }
+
+            .vehicle-block {
+                margin-bottom: 8px !important;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .vehicle-title {
+                font-size: 10px !important;
+                padding: 4px 6px !important;
+            }
+
+            .vehicle-total-summary {
+                display: none !important;
+            }
+
+            .copy-summary-btn {
+                display: none !important;
+            }
+
+            .vehicle-table {
+                font-size: 8px !important;
+            }
+
+            .vehicle-table td {
+                padding: 3px 4px !important;
+            }
+
+            .vehicle-total-row,
+            .vehicle-total-row td {
+                background: #dceaf7 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .customer-row,
+            .customer-row td {
+                background: #f7f9fb !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+        }
+
+
+        .input-table th {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+        }
+
+
+        .vehicle-table td {
+            border: 1px solid #8996a3;
+            padding: 7px 8px;
+            white-space: nowrap;
+            text-align: right;
+        }
+
+
+        .vehicle-table td:first-child {
+            text-align: left;
+        }
+
+
+        .vehicle-total-row,
+        .vehicle-total-row td {
+            background: #dceaf7 !important;
+            color: #123b66;
+            font-weight: bold;
+        }
+
+
+        .customer-row {
+            background: #f7f9fb;
+            font-weight: bold;
+        }
+
+
+        .customer-row td:first-child {
+            padding-left: 14px;
+        }
+
+
+        .gate-row td:first-child {
+            padding-left: 28px;
+        }
+
+    </style>
 
 </head>
 
 
-<body class="min-h-screen bg-[#f5f5f5]">
-
-    <!-- HEADER -->
-
-    <div id="header"></div>
+<body class="">
 
 
-    <!-- VEHICLE SUMMARY -->
+<!-- =====================================================
+     HEADER COMPONENT
+===================================================== -->
 
-    <main
-        class="
-            min-h-[calc(100vh-90px)]
-            px-4
-            py-8
-            sm:px-6
-            sm:py-10
-        "
-    >
+<div id="headerComponent"></div>
 
-        <div class="mx-auto w-full max-w-[1050px]">
 
-            <div class="mb-8">
+<!-- =====================================================
+     MAIN
+===================================================== -->
 
-                <h1
-                    class="
-                        text-2xl
-                        font-bold
-                        text-[#222]
-                        sm:text-3xl
-                    "
+<main class="mx-auto max-w-[1500px]">
+
+
+    <!-- =================================================
+         PAGE TITLE
+    ================================================== -->
+
+    <div class="no-print">
+
+        <h1 class="mb-5 text-center text-2xl font-bold text-[#123b66]">
+            Gate Pass Vehicle Wise Summary
+        </h1>
+
+
+        <!-- =============================================
+             UPLOAD + PASTE
+        ============================================== -->
+
+        <div class="flex flex-col gap-[18px] lg:flex-row">
+
+
+            <!-- UPLOAD -->
+
+            <section
+                class="flex-1 rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+            >
+
+                <h2 class="mb-3 text-lg font-bold text-[#174a7a]">
+                    1. Upload Excel File
+                </h2>
+
+                <input
+                    type="file"
+                    id="excelFile"
+                    accept=".xlsx,.xls,.csv"
+                    class="w-full rounded-md border border-[#cbd5df] p-2.5"
                 >
-                    Vehicle Summary
-                </h1>
 
-                <p class="mt-1 text-sm text-[#777]">
-                    Vehicle summary and information.
-                </p>
+                <div
+                    id="fileStatus"
+                    class="mt-2.5 text-sm font-bold"
+                >
+                    No Excel file selected.
+                </div>
+
+            </section>
+
+
+            <!-- PASTE -->
+
+            <section
+                class="flex-1 rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+            >
+
+                <h2 class="mb-3 text-lg font-bold text-[#174a7a]">
+                    2. Paste Gate Pass Data
+                </h2>
+
+                <textarea
+                    id="pasteInput"
+                    placeholder="Excel থেকে OGP Date, Gate Out Date, Gate Pass No, Vehicle No সহ data copy করে এখানে paste করুন..."
+                    class="min-h-[180px] w-full resize-y rounded-[7px] border border-[#cbd5df] p-3 font-mono text-[13px]"
+                ></textarea>
+
+
+                <div class="mt-3 flex flex-wrap gap-2.5">
+
+                    <button
+                        class="rounded-md bg-[#198754] px-[18px] py-2.5 font-bold text-white transition hover:opacity-90"
+                        onclick="loadPasteTable()"
+                    >
+                        Load Paste Data
+                    </button>
+
+                    <button
+                        class="rounded-md bg-[#f08c00] px-[18px] py-2.5 font-bold text-white transition hover:opacity-90"
+                        onclick="clearPaste()"
+                    >
+                        Clear Paste
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="pasteStatus"
+                    class="mt-2.5 text-sm font-bold"
+                ></div>
+
+            </section>
+
+        </div>
+
+
+        <!-- =============================================
+             INPUT TABLE CARD
+        ============================================== -->
+
+        <section
+            id="inputTableCard"
+            class="mt-[18px] hidden rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+        >
+
+            <h2 class="mb-3 text-lg font-bold text-[#174a7a]">
+                3. Paste Input Table
+            </h2>
+
+
+            <div class="flex flex-col gap-[15px] lg:flex-row">
+
+
+                <!-- LEFT SIDE -->
+
+                <div
+                    class="flex w-full flex-col gap-3 lg:w-[270px] lg:shrink-0"
+                >
+
+
+                    <!-- FILTER -->
+
+                    <div
+                        class="flex-1 rounded-[7px] border border-[#d6dee7] bg-[#f8fafc] p-2.5"
+                    >
+
+                        <label
+                            for="gateOutDateFilter"
+                            class="mb-1.5 block text-[#174a7a]"
+                        >
+                            <b>Gate Out Date</b>
+                        </label>
+
+                        <select
+                            id="gateOutDateFilter"
+                            multiple
+                            onchange="renderInputTable()"
+                            class="min-h-[180px] w-full rounded-[5px] border border-[#cbd5df] bg-white p-2"
+                        ></select>
+
+                        <small class="mt-1.5 block leading-5 text-[#777]">
+                            একসাথে Date + Blank select করতে
+                            Ctrl / Cmd ব্যবহার করুন
+                        </small>
+
+                    </div>
+
+
+                    <!-- ACTIONS -->
+
+                    <div
+                        class="rounded-[7px] border border-[#d6dee7] bg-[#f8fafc] p-2.5"
+                    >
+
+                        <div class="flex flex-col gap-2.5">
+
+                            <button
+                                class="w-full rounded-md bg-[#1677c8] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
+                                onclick="addInputRow()"
+                            >
+                                + Add Row
+                            </button>
+
+                            <button
+                                class="w-full rounded-md bg-[#198754] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
+                                onclick="generateReport()"
+                            >
+                                Generate Report
+                            </button>
+
+                            <button
+                                class="w-full rounded-md bg-[#343a40] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
+                                onclick="clearAll()"
+                            >
+                                Clear All
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- INPUT TABLE -->
+
+                <div
+                    class="max-h-[500px] min-w-0 flex-1 overflow-auto rounded-[7px] border border-[#ccd6df]"
+                >
+
+                    <table
+                        class="input-table w-full border-collapse bg-white text-xs"
+                    >
+
+                        <thead>
+
+                            <tr>
+
+                                <th
+                                    class="w-[45px] whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white"
+                                >
+                                    #
+                                </th>
+
+                                <th
+                                    class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white"
+                                >
+                                    OGP Date
+                                </th>
+
+                                <th
+                                    class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white"
+                                >
+                                    Gate Out Date
+                                </th>
+
+                                <th
+                                    class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white"
+                                >
+                                    Gate Pass No
+                                </th>
+
+                                <th
+                                    class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white"
+                                >
+                                    Vehicle No
+                                </th>
+
+                                <th
+                                    class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white"
+                                >
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="inputTableBody"></tbody>
+
+                    </table>
+
+                </div>
 
             </div>
 
+        </section>
 
-            <!-- YOUR VEHICLE SUMMARY CONTENT -->
+    </div>
 
-            <div
-                class="
-                    rounded-2xl
-                    bg-white
-                    p-6
-                    shadow-[0_5px_20px_rgba(0,0,0,0.07)]
-                "
+
+    <!-- =================================================
+         REPORT
+    ================================================== -->
+
+    <section
+        id="reportArea"
+        class="report-wrapper rounded-[10px] bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+    >
+
+
+        <!-- REPORT HEADER -->
+
+        <div class="report-header mb-[15px] text-center">
+
+            <h2 class="m-0 text-[23px] font-bold text-[#123b66]">
+                Gate Pass Vehicle Wise Summary
+            </h2>
+
+            <p
+                id="reportDate"
+                class="mt-1 text-xs text-[#666]"
+            ></p>
+
+        </div>
+
+
+        <!-- REPORT ACTIONS -->
+
+        <div
+            class="report-actions no-print mb-[15px] flex flex-wrap justify-center gap-2.5"
+        >
+
+            <button
+                class="min-w-[130px] rounded-md bg-[#1677c8] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
+                onclick="printPDF()"
             >
+                🖨 Print
+            </button>
 
-                <p class="text-sm text-[#777]">
-                    Vehicle Summary content will be here.
-                </p>
+            <button
+                class="min-w-[130px] rounded-md bg-[#dc3545] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
+                onclick="downloadPDF()"
+            >
+                📄 Download PDF
+            </button>
 
+        </div>
+
+
+        <!-- VEHICLE TABLES -->
+
+        <div id="vehicleTables">
+
+            <div class="py-[25px] text-center text-[#777]">
+                Generate report to view data
             </div>
 
         </div>
 
-    </main>
+    </section>
+
+</main>
 
 
-    <!-- FOOTER -->
+<script>
 
-    <div id="footer"></div>
+/* =====================================================
+   LOAD HEADER COMPONENT
+===================================================== */
+
+async function loadHeaderComponent() {
+
+    try {
+
+        const response =
+            await fetch("components/header.html");
+
+        if (!response.ok) {
+            throw new Error("Header component could not be loaded.");
+        }
+
+        const html =
+            await response.text();
+
+        document.getElementById(
+            "headerComponent"
+        ).innerHTML = html;
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        document.getElementById(
+            "headerComponent"
+        ).innerHTML = `
+            <div class="bg-red-600 p-3 text-center font-bold text-white">
+                Header could not be loaded.
+            </div>
+        `;
+
+    }
+
+}
+
+loadHeaderComponent();
 
 
-    <!-- MAIN JS -->
+/* =====================================================
+   GLOBAL
+===================================================== */
 
-    <script src="js/script.js"></script>
+let excelRows = [];
 
+let inputRows = [];
+
+
+/* =====================================================
+   CUSTOMER MAPPING
+===================================================== */
+
+const customerMap = [
+
+    ["MAWNA FASHIONS LTD. Jinnat Knitwear Ltd","JINNAT"],
+    ["FLAMINGO FASHIONS LTD. FLAMINGO FASHIONS LTD. SARDAGONJ, KASHIMPUR, GAZIPUR","JINNAT"],
+    ["FB FOOTWEAR LTD. Uloshara, Kaliakoir, Gazipur","FB"],
+    ["JINNAT KNITWEARS LTD. SARDAGONJ, KASHIMPUR, GAZIPUR","JINNAT"],
+    ["FLAMINGO FASHIONS LTD. (FFL2-1)_FLAMINGO FASHIONS LTD.","FFL2"],
+    ["MAWNA FASHIONS LTD. MAWNA, SHREEPUR, GAZIPUR","MAWNA"],
+    ["PARASOLE FOOTWEAR LTD. Moddho Gazirchat, Ashulia, Savar, Dhaka.","PARASOL"],
+    ["JINNAT KNITWEARS LTD. (JKL-U2-2)_JINNAT KNITWEARS LTD.","JKL-2"],
+    ["JINNAT KNITWEARS LTD. (FFL2-1)_FLAMINGO FASHIONS LTD.","FFL2"],
+    ["Bonshoe Bangladesh Ltd. Plot#1-5, Sector# 5, CEPZ Chattogram","BONSHOE"],
+    ["JINNAT FASHIONS LTD. SARDARGONJ, KASHIMPUR, GAZIPUR","JINNAT"],
+    ["APEX FOOTWEAR LIMITED. Shafipur, Kaliakoir, Gazipur","APEX"],
+    ["EDISON FOOTWEAR LTD. J L No: 5, Mirzapur, Gazipur Sadar,1700 Gazipur, Bangladesh","EDISION"],
+    ["THANBEE PRINT WORLD LTD. SARDAGONJ, KASHIMPUR, GAZIPUR","THANBE"],
+    ["JINNAT FASHIONS LTD. JINNAT FASHIONS LTD.","JINNAT"],
+    ["VULUA FOOTWEAR INDUSTRIES LTD. Dighamatia, Hemayetpur, Savar, Dhaka, Bangladesh","VULUA"],
+    ["JINNAT FASHIONS LTD. Mawna Fashions Ltd ,Tepir Bari, Sreepur, Gazipur, Bangladesh","MAWNA"],
+    ["MATIN SPINNING MILLS PLC SARDAGONJ, KASHIMPUR, GAZIPUR","MATIN"],
+    ["FLAMINGO FASHIONS LTD. (JKL-U2-1)_JINNAT KNITWEARS LTD","JKL-2"],
+    ["FOOTBED FOOTWEAR LTD. ULOSHARA, KAI.IAKOI R, GAZIPUR","FOOTBED"],
+    ["DBL CERAMICS LTD. MAWNA, SREEPUR, GAZIPUR","CERAMICS"],
+    ["UTAH FASHIONS LTD 1st-6th Floor, South Shalna, PO: Shalna Bazar, PS: Gazipur Sadar, Gazipur, Bangladesh.","UTAH FASHION"],
+    ["JINNAT KNITWEARS LTD. (JKL-U2-1)_JINNAT KNITWEARS LTD.","JKL-2"],
+    ["GLORY TEXTILES & APPARELS LTD. Kharuail, Ward No-7, Bhaluka Municipal Area Mymensingh 2240 BANGLADESH","GLORY"],
+    ["EU DESIGN, HK LTD. UNITS 1901-1906, 19/F, METRO LOFT, NO. 38 KWAI HEI STREET, KWAI CHUNG, N. T.","EU DESIGN"],
+    ["FLAMINGO FASHIONS LTD. (JKL-U2-4)_JINNAT KNITWEARS LTD","JKL-2"],
+    ["PARKWAY PACKAGING & PRINTING PLC SARDAGONJ, KASHIMPUR, GAZIPUR","PARKWAY"],
+    ["TEXTILE TESTING SERVICES LTD. NAYAPARA, KASHIMPUR, GAZIPUR, 1712","TTSL"],
+    ["UTAH KNITTING & DYEING LTD( Garments Division ) Vill:Bokran Monipur, P.O.Bhabanipur, P.S.Gazipur Sadar, Dist: Gazipur, Bangladesh","UTAH KNITING"],
+    ["JINNAT KNITWEARS LTD. (MFL)_MAWNA FASHIONS LTD.","MAWNA"],
+    ["MEHNAZ STYLES & CRAFT LTD. Industry SL No-56, Ward-06 | Tongabari Ashulia, Savar, Dhaka","MEHNAZ"],
+    ["COLOR CITY LTD. NAYAPARA, KASHIMPUR, GAZIPUR","COLOR"],
+    ["MAWNA FASHIONS LTD. (JKL-U2-2)_JINNAT KNITWEARS LTD.","JKL-2"],
+    ["JINNAT APPARELS LTD. SARDAGONJ, KASHIMPUR, GAZIPUR","JINNAT"],
+    ["FLAMINGO FASHIONS LTD. (JAL)_JINNAT APPARELS LTD","JINNAT"],
+    ["EUDB ACCESSORIES LIMITED SARDAGONJ, KASHIMPUR, GAZIPUR","EUDB"],
+    ["DB TEX LTD. NAYAPARA, KASHIMPUR, GAZIPUR","DB TEX"],
+    ["Nuovo Shoes (BD) Ltd. BUILDING.B,PLOT#81-B2,WEST -PADARDIA,SATAKUL,ROAD.SATAKUL-294, DHAKA,","NUOVO SHOES"],
+    ["OMC FOOTWEAR LIMITED Nalpathor, Kanchan, Rupgonj, Narayanganj-1461, Bangladesh","OMC"],
+    ["HAMZA TEXTILES LTD. SARDAGONJ, KASHIMPUR, GAZIPUR","HAMZA"],
+    ["COMFIT COMPOSITE KNIT LTD. GORAI, MIRZAPUR, TANGAIL","COMFIT"],
+    ["Fabrica Knit Composite Ltd. Jamgora, Asulia, Dhaka","FAVRICA"],
+    ["FLAMINGO FASHIONS LTD. Glory Textile & Apparels Ltd.","GLORY"],
+    ["Fabrica Knit Composite Ltd. FNF Trend Fashion Ltd","FAVRICA"],
+    ["DBL Pharmaceuticals Ltd. DEWAN BARI, KASHIMPUR, GAZIPUR","PRHARMA"],
+    ["JINNAT KNITWEARS LTD. (MFL-1)_MAWNA FASHIONS LTD","MAWNA"],
+    ["JINNAT KNITWEARS LTD. (FFL2-2)_FLAMINGO FASHIONS LTD.","FFL2"],
+    ["FLAMINGO FASHIONS LTD. (FFL2-4)_FLAMINGO FASHIONS LTD.","FFL2"],
+    ["FLAMINGO FASHIONS LTD. (JKL-U2-3)_JINNAT KNITWEARS LTD.","JKL-2"],
+    ["MATRIGHOR LIMITED. Shingair Road, Hemayetpur, Tetuljhora, Savar, Dhaka-1340","MATRIGH"],
+    ["FLAMINGO FASHIONS LTD. (JAL-1)_JINNAT APPARELS LTD","JINNAT"],
+    ["JINNAT KNITWEARS LTD. (JKL-U2-4)_JINNAT KNITWEARS LTD.","JKL-2"],
+    ["FLAMINGO FASHIONS LTD. (FFL2-5)_FLAMINGO FASHIONS LTD.","FFL2"],
+    ["MAWNA FASHIONS LTD. (MFL)_MAWNA FASHIONS LTD.","MAWNA"],
+    ["JINNAT KNITWEARS LTD (JKL)_JINNAT KNITWEARS LTD.","JINNAT"],
+    ["T.K. FOOTWEAR LIMITED. 4, CDA INDUSTRIAL AREA, CHANDGAON,KALURGHAT, CHITTAGONG, BANGLADESH","T.K. FOOTWEAR"],
+    ["JINNAT KNITWEARS LTD. (JKL-U2-3)_JINNAT KNITWEARS LTD.","JKL-2"],
+    ["FLAMINGO FASHIONS LTD. (JKL-1)_JINNAT KNITWEARS LTD.","JINNAT"],
+    ["JINNAT KNITWEARS LTD. (JKL)_JINNAT KNITWEARS LTD.","JINNAT"],
+    ["Jinnat Textile Mills Ltd. (JTML) Shreehatta Economic Zone, Sherpur, Moulvibazar","Jinnat Textile"]
+
+];
+
+
+/* =====================================================
+   NORMALIZE
+===================================================== */
+
+function normalize(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/<br\s*\/?>/gi, " ")
+        .replace(/\u00a0/g, " ")
+        .replace(/[\r\n\t]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase();
+
+}
+
+
+/* =====================================================
+   NUMBER
+===================================================== */
+
+function numberValue(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return 0;
+    }
+
+    const text =
+        String(value)
+            .replace(/,/g, "")
+            .replace(/[^\d.-]/g, "");
+
+    const num = parseFloat(text);
+
+    return isNaN(num) ? 0 : num;
+
+}
+
+
+/* =====================================================
+   FORMAT NUMBER
+===================================================== */
+
+function formatNumber(value) {
+
+    if (!isFinite(value)) {
+        return "0";
+    }
+
+    return Number(value).toLocaleString(
+        "en-US",
+        {
+            maximumFractionDigits: 3
+        }
+    );
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =====================================================
+   FIND COLUMN
+===================================================== */
+
+function findColumn(row, names) {
+
+    const keys = Object.keys(row);
+
+    for (const name of names) {
+
+        const target = normalize(name);
+
+        const exact = keys.find(
+            key => normalize(key) === target
+        );
+
+        if (exact) {
+            return exact;
+        }
+
+    }
+
+    for (const name of names) {
+
+        const target = normalize(name);
+
+        const partial = keys.find(key => {
+
+            const current = normalize(key);
+
+            return (
+                current.includes(target) ||
+                target.includes(current)
+            );
+
+        });
+
+        if (partial) {
+            return partial;
+        }
+
+    }
+
+    return null;
+
+}
+
+
+/* =====================================================
+   EXCEL UPLOAD
+===================================================== */
+
+document
+    .getElementById("excelFile")
+    .addEventListener(
+        "change",
+        function(event) {
+
+            const file = event.target.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+
+                try {
+
+                    const data =
+                        new Uint8Array(
+                            e.target.result
+                        );
+
+                    const workbook =
+                        XLSX.read(
+                            data,
+                            {
+                                type: "array",
+                                cellDates: true
+                            }
+                        );
+
+                    const sheet =
+                        workbook.Sheets[
+                            workbook.SheetNames[0]
+                        ];
+
+                    excelRows =
+                        XLSX.utils.sheet_to_json(
+                            sheet,
+                            {
+                                defval: "",
+                                raw: false
+                            }
+                        );
+
+                    const status =
+                        document.getElementById(
+                            "fileStatus"
+                        );
+
+                    status.innerHTML =
+                        "Excel loaded successfully: " +
+                        excelRows.length +
+                        " rows.";
+
+                    status.style.color =
+                        "#198754";
+
+                }
+                catch(error) {
+
+                    console.error(error);
+
+                    const status =
+                        document.getElementById(
+                            "fileStatus"
+                        );
+
+                    status.innerHTML =
+                        "Error reading Excel file.";
+
+                    status.style.color =
+                        "#dc3545";
+
+                }
+
+            };
+
+            reader.readAsArrayBuffer(file);
+
+        }
+    );
+
+
+/* =====================================================
+   PREPARE EXCEL
+===================================================== */
+
+function prepareExcelData() {
+
+    return excelRows.map(row => {
+
+        const gateCol =
+            findColumn(
+                row,
+                [
+                    "Gate Pass No",
+                    "Gate Pass",
+                    "GatePass No"
+                ]
+            );
+
+        const challanCol =
+            findColumn(
+                row,
+                [
+                    "Challan No",
+                    "Challan"
+                ]
+            );
+
+        const qtyCol =
+            findColumn(
+                row,
+                [
+                    "Quantity",
+                    "Qty"
+                ]
+            );
+
+        const weightCol =
+            findColumn(
+                row,
+                [
+                    "Net Weight",
+                    "NetWeight",
+                    "Weight"
+                ]
+            );
+
+        const bagCol =
+            findColumn(
+                row,
+                [
+                    "Bag/Ctn",
+                    "Bag Ctn",
+                    "Bag/Ctns",
+                    "Bag"
+                ]
+            );
+
+        const customerCol =
+            findColumn(
+                row,
+                [
+                    "Customer Name",
+                    "Customer",
+                    "Buyer Name"
+                ]
+            );
+
+        const locationCol =
+            findColumn(
+                row,
+                [
+                    "Delilocation",
+                    "Delivery Location",
+                    "DeliveryLocation",
+                    "Location"
+                ]
+            );
+
+        const vehicleCol =
+            findColumn(
+                row,
+                [
+                    "Vehicle No",
+                    "Vehicle Number"
+                ]
+            );
+
+        return {
+
+            gatePass:
+                gateCol
+                    ? String(row[gateCol]).trim()
+                    : "",
+
+            challan:
+                challanCol
+                    ? String(row[challanCol]).trim()
+                    : "",
+
+            quantity:
+                numberValue(
+                    qtyCol
+                        ? row[qtyCol]
+                        : 0
+                ),
+
+            netWeight:
+                numberValue(
+                    weightCol
+                        ? row[weightCol]
+                        : 0
+                ),
+
+            bagCtn:
+                numberValue(
+                    bagCol
+                        ? row[bagCol]
+                        : 0
+                ),
+
+            customer:
+                customerCol
+                    ? String(row[customerCol]).trim()
+                    : "",
+
+            location:
+                locationCol
+                    ? String(row[locationCol]).trim()
+                    : "",
+
+            vehicle:
+                vehicleCol
+                    ? String(row[vehicleCol]).trim()
+                    : ""
+
+        };
+
+    });
+
+}
+
+
+/* =====================================================
+   PASTE PARSER
+===================================================== */
+
+function parsePastedData(text) {
+
+    if (!text.trim()) {
+        return [];
+    }
+
+    const lines =
+        text
+            .split(/\r?\n/)
+            .map(x => x.trim())
+            .filter(x => x !== "");
+
+    if (!lines.length) {
+        return [];
+    }
+
+    let delimiter = "\t";
+
+    if (!lines[0].includes("\t")) {
+
+        if (lines[0].includes("|")) {
+            delimiter = "|";
+        }
+        else {
+            delimiter = /\s{2,}/;
+        }
+
+    }
+
+    const headers =
+        lines[0]
+            .split(delimiter)
+            .map(x => normalize(x));
+
+    const result = [];
+
+    for (
+        let i = 1;
+        i < lines.length;
+        i++
+    ) {
+
+        const cols =
+            lines[i].split(delimiter);
+
+        if (cols.length <= 1) {
+            continue;
+        }
+
+        const obj = {};
+
+        headers.forEach(
+            (header, index) => {
+
+                obj[header] =
+                    cols[index] !== undefined
+                        ? cols[index].trim()
+                        : "";
+
+            }
+        );
+
+        result.push(obj);
+
+    }
+
+    return result;
+
+}
+
+
+/* =====================================================
+   PREPARE PASTE INPUT
+===================================================== */
+
+function preparePastedData() {
+
+    const rows =
+        parsePastedData(
+            document.getElementById(
+                "pasteInput"
+            ).value
+        );
+
+    return rows.map(row => {
+
+        const ogpDateCol =
+            findColumn(
+                row,
+                [
+                    "OGP Date",
+                    "OGPDate"
+                ]
+            );
+
+        const gateOutDateCol =
+            findColumn(
+                row,
+                [
+                    "Gate Out Date",
+                    "GateOut Date",
+                    "GateOutDate",
+                    "Gate Out"
+                ]
+            );
+
+        const gateCol =
+            findColumn(
+                row,
+                [
+                    "Gate Pass No",
+                    "Gate Pass",
+                    "GatePass No"
+                ]
+            );
+
+        const vehicleCol =
+            findColumn(
+                row,
+                [
+                    "Vehicle No",
+                    "Vehicle Number"
+                ]
+            );
+
+        return {
+
+            ogpDate:
+                ogpDateCol
+                    ? row[ogpDateCol]
+                    : "",
+
+            gateOutDate:
+                gateOutDateCol
+                    ? row[gateOutDateCol]
+                    : "",
+
+            gatePass:
+                gateCol
+                    ? row[gateCol]
+                    : "",
+
+            vehicle:
+                vehicleCol
+                    ? row[vehicleCol]
+                    : ""
+
+        };
+
+    });
+
+}
+
+
+/* =====================================================
+   DATE NORMALIZE
+===================================================== */
+
+function normalizeDateForFilter(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        String(value).trim() === ""
+    ) {
+        return "";
+    }
+
+    let text =
+        String(value).trim();
+
+    let m =
+        text.match(
+            /^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/
+        );
+
+    if (m) {
+
+        const day =
+            String(m[1]).padStart(2, "0");
+
+        const monthNumber =
+            parseInt(m[2], 10);
+
+        const year = m[3];
+
+        const months = [
+            "Jan","Feb","Mar","Apr",
+            "May","Jun","Jul","Aug",
+            "Sep","Oct","Nov","Dec"
+        ];
+
+        if (
+            monthNumber >= 1 &&
+            monthNumber <= 12
+        ) {
+
+            return (
+                day +
+                "-" +
+                months[monthNumber - 1] +
+                "-" +
+                year
+            );
+
+        }
+
+    }
+
+    const date = new Date(text);
+
+    if (!isNaN(date.getTime())) {
+        return formatGateOutDate(date);
+    }
+
+    return text;
+
+}
+
+
+/* =====================================================
+   FORMAT DATE
+===================================================== */
+
+function formatGateOutDate(date) {
+
+    const day =
+        String(date.getDate())
+            .padStart(2, "0");
+
+    const months = [
+        "Jan","Feb","Mar","Apr",
+        "May","Jun","Jul","Aug",
+        "Sep","Oct","Nov","Dec"
+    ];
+
+    return (
+        day +
+        "-" +
+        months[date.getMonth()] +
+        "-" +
+        date.getFullYear()
+    );
+
+}
+
+
+/* =====================================================
+   LOAD PASTE TABLE
+===================================================== */
+
+function loadPasteTable() {
+
+    const rows =
+        preparePastedData();
+
+    if (!rows.length) {
+
+        const status =
+            document.getElementById(
+                "pasteStatus"
+            );
+
+        status.style.color =
+            "#dc3545";
+
+        status.innerText =
+            "Please paste valid data first.";
+
+        return;
+
+    }
+
+    inputRows = rows;
+
+    document.getElementById(
+        "inputTableCard"
+    ).classList.remove("hidden");
+
+    buildGateOutDateFilter();
+
+    renderInputTable();
+
+    const status =
+        document.getElementById(
+            "pasteStatus"
+        );
+
+    status.style.color =
+        "#198754";
+
+    status.innerText =
+        inputRows.length +
+        " rows loaded. You can edit, add or remove rows.";
+
+}
+
+
+/* =====================================================
+   BUILD DATE FILTER
+===================================================== */
+
+function buildGateOutDateFilter() {
+
+    const select =
+        document.getElementById(
+            "gateOutDateFilter"
+        );
+
+    if (!select) {
+        return;
+    }
+
+    const oldSelected =
+        Array.from(
+            select.selectedOptions
+        ).map(
+            option => option.value
+        );
+
+    select.innerHTML = "";
+
+    const dates = new Set();
+
+    let hasBlank = false;
+
+    inputRows.forEach(row => {
+
+        const formatted =
+            normalizeDateForFilter(
+                row.gateOutDate
+            );
+
+        if (formatted) {
+            dates.add(formatted);
+        }
+        else {
+            hasBlank = true;
+        }
+
+    });
+
+    const sortedDates =
+        [...dates].sort((a, b) => {
+
+            const parse = x => {
+
+                const parts =
+                    x.split("-");
+
+                if (parts.length !== 3) {
+                    return new Date(x);
+                }
+
+                const monthMap = {
+                    Jan: 0,
+                    Feb: 1,
+                    Mar: 2,
+                    Apr: 3,
+                    May: 4,
+                    Jun: 5,
+                    Jul: 6,
+                    Aug: 7,
+                    Sep: 8,
+                    Oct: 9,
+                    Nov: 10,
+                    Dec: 11
+                };
+
+                return new Date(
+                    Number(parts[2]),
+                    monthMap[parts[1]],
+                    Number(parts[0])
+                );
+
+            };
+
+            return parse(a) - parse(b);
+
+        });
+
+    sortedDates.forEach(date => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = date;
+
+        option.textContent = date;
+
+        if (oldSelected.includes(date)) {
+            option.selected = true;
+        }
+
+        select.appendChild(option);
+
+    });
+
+    if (hasBlank) {
+
+        const option =
+            document.createElement("option");
+
+        option.value = "__BLANK__";
+
+        option.textContent = "Blank";
+
+        if (
+            oldSelected.includes(
+                "__BLANK__"
+            )
+        ) {
+            option.selected = true;
+        }
+
+        select.appendChild(option);
+
+    }
+
+}
+
+
+/* =====================================================
+   SELECTED DATES
+===================================================== */
+
+function getSelectedGateOutDates() {
+
+    const select =
+        document.getElementById(
+            "gateOutDateFilter"
+        );
+
+    if (!select) {
+        return [];
+    }
+
+    return Array.from(
+        select.selectedOptions
+    ).map(
+        option => option.value
+    );
+
+}
+
+
+/* =====================================================
+   FILTER INPUT ROWS
+===================================================== */
+
+function getFilteredInputRows() {
+
+    const selected =
+        getSelectedGateOutDates();
+
+    if (!selected.length) {
+        return inputRows;
+    }
+
+    return inputRows.filter(row => {
+
+        const date =
+            normalizeDateForFilter(
+                row.gateOutDate
+            );
+
+        if (!date) {
+
+            return selected.includes(
+                "__BLANK__"
+            );
+
+        }
+
+        return selected.includes(date);
+
+    });
+
+}
+
+
+/* =====================================================
+   RENDER INPUT TABLE
+===================================================== */
+
+function renderInputTable() {
+
+    const tbody =
+        document.getElementById(
+            "inputTableBody"
+        );
+
+    tbody.innerHTML = "";
+
+    const selected =
+        getSelectedGateOutDates();
+
+    inputRows.forEach(
+        (row, index) => {
+
+            const date =
+                normalizeDateForFilter(
+                    row.gateOutDate
+                );
+
+            let visible = true;
+
+            if (selected.length) {
+
+                if (!date) {
+
+                    visible =
+                        selected.includes(
+                            "__BLANK__"
+                        );
+
+                }
+                else {
+
+                    visible =
+                        selected.includes(date);
+
+                }
+
+            }
+
+            if (!visible) {
+                return;
+            }
+
+            const tr =
+                document.createElement("tr");
+
+            tr.innerHTML = `
+
+                <td class="border border-[#cbd5df] p-[5px] text-center font-bold text-[#555]">
+                    ${index + 1}
+                </td>
+
+                <td class="border border-[#cbd5df] p-[5px]">
+
+                    <input
+                        type="text"
+                        value="${escapeHtml(row.ogpDate)}"
+                        onchange="updateInputRow(${index}, 'ogpDate', this.value)"
+                        class="w-full min-w-[120px] rounded border border-[#d1d9e0] p-1.5 text-xs outline-none focus:border-[#1677c8] focus:ring-2 focus:ring-blue-200"
+                    >
+
+                </td>
+
+                <td class="border border-[#cbd5df] p-[5px]">
+
+                    <input
+                        type="text"
+                        value="${escapeHtml(row.gateOutDate)}"
+                        onchange="updateInputRow(${index}, 'gateOutDate', this.value); refreshDateFilter();"
+                        class="w-full min-w-[120px] rounded border border-[#d1d9e0] p-1.5 text-xs outline-none focus:border-[#1677c8] focus:ring-2 focus:ring-blue-200"
+                    >
+
+                </td>
+
+                <td class="border border-[#cbd5df] p-[5px]">
+
+                    <input
+                        type="text"
+                        value="${escapeHtml(row.gatePass)}"
+                        onchange="updateInputRow(${index}, 'gatePass', this.value)"
+                        class="w-full min-w-[120px] rounded border border-[#d1d9e0] p-1.5 text-xs outline-none focus:border-[#1677c8] focus:ring-2 focus:ring-blue-200"
+                    >
+
+                </td>
+
+                <td class="border border-[#cbd5df] p-[5px]">
+
+                    <input
+                        type="text"
+                        value="${escapeHtml(row.vehicle)}"
+                        onchange="updateInputRow(${index}, 'vehicle', this.value)"
+                        class="w-full min-w-[120px] rounded border border-[#d1d9e0] p-1.5 text-xs outline-none focus:border-[#1677c8] focus:ring-2 focus:ring-blue-200"
+                    >
+
+                </td>
+
+                <td class="border border-[#cbd5df] p-[5px]">
+
+                    <button
+                        class="rounded bg-[#dc3545] px-2 py-1 text-[11px] font-bold text-white hover:opacity-90"
+                        onclick="removeInputRow(${index})"
+                    >
+                        Remove
+                    </button>
+
+                </td>
+
+            `;
+
+            tbody.appendChild(tr);
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   UPDATE ROW
+===================================================== */
+
+function updateInputRow(index, field, value) {
+
+    if (!inputRows[index]) {
+        return;
+    }
+
+    inputRows[index][field] = value;
+
+}
+
+
+/* =====================================================
+   REFRESH FILTER
+===================================================== */
+
+function refreshDateFilter() {
+
+    const selected =
+        getSelectedGateOutDates();
+
+    buildGateOutDateFilter();
+
+    const select =
+        document.getElementById(
+            "gateOutDateFilter"
+        );
+
+    Array.from(select.options)
+        .forEach(option => {
+
+            if (
+                selected.includes(
+                    option.value
+                )
+            ) {
+                option.selected = true;
+            }
+
+        });
+
+    renderInputTable();
+
+}
+
+
+/* =====================================================
+   ADD ROW
+===================================================== */
+
+function addInputRow() {
+
+    inputRows.push({
+
+        ogpDate: "",
+        gateOutDate: "",
+        gatePass: "",
+        vehicle: ""
+
+    });
+
+    buildGateOutDateFilter();
+
+    renderInputTable();
+
+}
+
+
+/* =====================================================
+   REMOVE ROW
+===================================================== */
+
+function removeInputRow(index) {
+
+    if (!confirm("Remove this row?")) {
+        return;
+    }
+
+    inputRows.splice(index, 1);
+
+    buildGateOutDateFilter();
+
+    renderInputTable();
+
+}
+
+
+/* =====================================================
+   CUSTOMER MAPPING
+===================================================== */
+
+function getMappedCustomer(customer, location) {
+
+    const combined =
+        normalize(
+            customer +
+            " " +
+            location
+        );
+
+    for (const item of customerMap) {
+
+        const source =
+            normalize(item[0]);
+
+        if (
+            combined === source ||
+            combined.includes(source) ||
+            source.includes(combined)
+        ) {
+
+            return item[1];
+
+        }
+
+    }
+
+    const checks = [
+
+        [/APEX FOOTWEAR/, "APEX"],
+        [/JINNAT APPARELS/, "JINNAT"],
+        [/JINNAT FASHIONS/, "JINNAT"],
+        [/JINNAT KNITWEARS.*FFL2/, "FFL2"],
+        [/FFL2/, "FFL2"],
+        [/JKL-U2/, "JKL-2"],
+        [/JKL-1/, "JINNAT"],
+        [/GLORY TEXTILES/, "GLORY"],
+        [/GLORY TEXTILE/, "GLORY"],
+        [/FOOTBED/, "FOOTBED"],
+        [/UTAH KNITTING/, "UTAH KNITING"],
+        [/UTAH FASHIONS/, "UTAH FASHION"],
+        [/FAVRICA|FABRICA/, "FAVRICA"],
+        [/T\.K\. FOOTWEAR/, "T.K. FOOTWEAR"],
+        [/PARASOLE/, "PARASOL"],
+        [/BONSHOE/, "BONSHOE"],
+        [/MATIN SPINNING/, "MATIN"],
+        [/MEHNAZ/, "MEHNAZ"],
+        [/COLOR CITY/, "COLOR"],
+        [/PARKWAY/, "PARKWAY"],
+        [/TEXTILE TESTING/, "TTSL"],
+        [/EU DESIGN/, "EU DESIGN"],
+        [/EUDB/, "EUDB"],
+        [/DB TEX/, "DB TEX"],
+        [/NUOVO SHOES/, "NUOVO SHOES"],
+        [/OMC FOOTWEAR/, "OMC"],
+        [/HAMZA TEXTILES/, "HAMZA"],
+        [/COMFIT/, "COMFIT"],
+        [/DBL CERAMICS/, "CERAMICS"],
+        [/DBL PHARMACEUTICALS/, "PRHARMA"],
+        [/MATRIGHOR/, "MATRIGH"],
+        [/VULUA/, "VULUA"],
+        [/THANBEE/, "THANBE"],
+        [/FB FOOTWEAR/, "FB"]
+
+    ];
+
+    for (const [regex, value] of checks) {
+
+        if (regex.test(combined)) {
+            return value;
+        }
+
+    }
+
+    return customer || "Unknown";
+
+}
+
+
+/* =====================================================
+   MATCH GATE PASS
+===================================================== */
+
+function getMatchedRows(excelData, pastedData) {
+
+    const gatePassSet =
+        new Set();
+
+    const vehicleMap =
+        new Map();
+
+    pastedData.forEach(row => {
+
+        const key =
+            normalize(row.gatePass);
+
+        if (!key) {
+            return;
+        }
+
+        gatePassSet.add(key);
+
+        if (!vehicleMap.has(key)) {
+
+            vehicleMap.set(
+                key,
+                []
+            );
+
+        }
+
+        if (row.vehicle) {
+
+            vehicleMap
+                .get(key)
+                .push(row.vehicle);
+
+        }
+
+    });
+
+    return excelData
+
+        .filter(row => {
+
+            return gatePassSet.has(
+                normalize(row.gatePass)
+            );
+
+        })
+
+        .map(row => {
+
+            const key =
+                normalize(row.gatePass);
+
+            const vehicles = [
+                ...new Set(
+                    (
+                        vehicleMap.get(key) ||
+                        []
+                    ).filter(Boolean)
+                )
+            ];
+
+            return {
+
+                ...row,
+
+                mappedCustomer:
+                    getMappedCustomer(
+                        row.customer,
+                        row.location
+                    ),
+
+                matchedVehicles:
+                    vehicles
+
+            };
+
+        });
+
+}
+
+
+/* =====================================================
+   DISTINCT
+===================================================== */
+
+function distinctCount(rows, field) {
+
+    const set =
+        new Set();
+
+    rows.forEach(row => {
+
+        const value =
+            normalize(row[field]);
+
+        if (value) {
+            set.add(value);
+        }
+
+    });
+
+    return set.size;
+
+}
+
+
+/* =====================================================
+   SUM
+===================================================== */
+
+function sumField(rows, field) {
+
+    return rows.reduce(
+        (total, row) => {
+
+            return (
+                total +
+                numberValue(
+                    row[field]
+                )
+            );
+
+        },
+        0
+    );
+
+}
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+function makeSummary(label, rows) {
+
+    return {
+
+        label,
+
+        gatePass:
+            distinctCount(
+                rows,
+                "gatePass"
+            ),
+
+        challan:
+            distinctCount(
+                rows,
+                "challan"
+            ),
+
+        quantity:
+            sumField(
+                rows,
+                "quantity"
+            ),
+
+        netWeight:
+            sumField(
+                rows,
+                "netWeight"
+            ),
+
+        bagCtn:
+            sumField(
+                rows,
+                "bagCtn"
+            )
+
+    };
+
+}
+
+
+/* =====================================================
+   VEHICLE SUMMARY TEXT
+===================================================== */
+
+function getVehicleSummaryText(vehicle, summary) {
+
+    return (
+        "Vehicle: " +
+        vehicle +
+        "\n" +
+        "Total Gatepass = " +
+        formatNumber(summary.gatePass) +
+        " pcs, Total Challan = " +
+        formatNumber(summary.challan) +
+        " pcs, Total QTY = " +
+        formatNumber(summary.quantity) +
+        " pcs/mtr/yrd, " +
+        formatNumber(summary.bagCtn) +
+        " CTN's/Bag's"
+    );
+
+}
+
+
+/* =====================================================
+   COPY VEHICLE SUMMARY
+===================================================== */
+
+async function copyVehicleSummary(
+    vehicle,
+    summary
+) {
+
+    const text =
+        getVehicleSummaryText(
+            vehicle,
+            summary
+        );
+
+    try {
+
+        await navigator.clipboard.writeText(
+            text
+        );
+
+        const buttons =
+            document.querySelectorAll(
+                ".copy-summary-btn"
+            );
+
+        buttons.forEach(btn => {
+
+            if (
+                btn.dataset.vehicle ===
+                vehicle
+            ) {
+
+                const oldText =
+                    btn.innerText;
+
+                btn.innerText =
+                    "✓ Copied";
+
+                setTimeout(
+                    () => {
+
+                        btn.innerText =
+                            oldText;
+
+                    },
+                    1500
+                );
+
+            }
+
+        });
+
+    }
+    catch(error) {
+
+        const textarea =
+            document.createElement(
+                "textarea"
+            );
+
+        textarea.value = text;
+
+        textarea.style.position =
+            "fixed";
+
+        textarea.style.left =
+            "-9999px";
+
+        document.body.appendChild(
+            textarea
+        );
+
+        textarea.select();
+
+        document.execCommand(
+            "copy"
+        );
+
+        document.body.removeChild(
+            textarea
+        );
+
+        alert(
+            "Vehicle summary copied."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   GENERATE REPORT
+===================================================== */
+
+function generateReport() {
+
+    const status =
+        document.getElementById(
+            "pasteStatus"
+        );
+
+    if (!excelRows.length) {
+
+        status.style.color =
+            "#dc3545";
+
+        status.innerHTML =
+            "Please upload Excel file first.";
+
+        return;
+
+    }
+
+    if (!inputRows.length) {
+
+        status.style.color =
+            "#dc3545";
+
+        status.innerHTML =
+            "Please load paste data first.";
+
+        return;
+
+    }
+
+    const filteredInputRows =
+        getFilteredInputRows();
+
+    const pastedData =
+        filteredInputRows.map(row => ({
+
+            gatePass:
+                String(
+                    row.gatePass || ""
+                ).trim(),
+
+            vehicle:
+                String(
+                    row.vehicle || ""
+                ).trim()
+
+        }));
+
+    if (!pastedData.length) {
+
+        status.style.color =
+            "#dc3545";
+
+        status.innerHTML =
+            "No rows available after filter.";
+
+        return;
+
+    }
+
+    const excelData =
+        prepareExcelData();
+
+    const matchedRows =
+        getMatchedRows(
+            excelData,
+            pastedData
+        );
+
+    if (!matchedRows.length) {
+
+        status.style.color =
+            "#dc3545";
+
+        status.innerHTML =
+            "No matching Gate Pass No found.";
+
+        document.getElementById(
+            "vehicleTables"
+        ).innerHTML = `
+
+            <div class="py-[25px] text-center text-[#777]">
+                No matching Gate Pass No found.
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+    const vehicleGroups =
+        new Map();
+
+    matchedRows.forEach(row => {
+
+        let vehicles =
+            row.matchedVehicles;
+
+        if (!vehicles.length) {
+
+            vehicles = [
+                row.vehicle ||
+                "Unknown"
+            ];
+
+        }
+
+        vehicles.forEach(vehicle => {
+
+            const key =
+                vehicle.trim() ||
+                "Unknown";
+
+            if (
+                !vehicleGroups.has(key)
+            ) {
+
+                vehicleGroups.set(
+                    key,
+                    []
+                );
+
+            }
+
+            vehicleGroups
+                .get(key)
+                .push(row);
+
+        });
+
+    });
+
+    renderVehicleWise(
+        vehicleGroups
+    );
+
+    document.getElementById(
+        "reportDate"
+    ).innerText =
+        "Generated: " +
+        new Date().toLocaleString();
+
+    status.style.color =
+        "#198754";
+
+    status.innerHTML =
+        "Report generated successfully. " +
+        matchedRows.length +
+        " matching Excel rows found.";
+
+}
+
+
+/* =====================================================
+   RENDER VEHICLE WISE
+===================================================== */
+
+function renderVehicleWise(vehicleGroups) {
+
+    const container =
+        document.getElementById(
+            "vehicleTables"
+        );
+
+    container.innerHTML = "";
+
+    vehicleGroups.forEach(
+        (rows, vehicle) => {
+
+            const vehicleTotal =
+                makeSummary(
+                    vehicle,
+                    rows
+                );
+
+            const customerGroups =
+                new Map();
+
+            rows.forEach(row => {
+
+                const customer =
+                    row.mappedCustomer ||
+                    "Unknown";
+
+                if (
+                    !customerGroups.has(
+                        customer
+                    )
+                ) {
+
+                    customerGroups.set(
+                        customer,
+                        []
+                    );
+
+                }
+
+                customerGroups
+                    .get(customer)
+                    .push(row);
+
+            });
+
+            const block =
+                document.createElement(
+                    "div"
+                );
+
+            block.className =
+                "vehicle-block mb-5 break-inside-avoid";
+
+            let html = `
+
+                <div class="vehicle-title rounded-t bg-[#174a7a] px-2.5 py-2 text-[15px] font-bold text-white">
+
+                    Vehicle:
+                    ${escapeHtml(vehicle)}
+
+                </div>
+
+
+                <div class="vehicle-total-summary flex items-center justify-between gap-2.5 border border-l-4 border-[#b8dfc8] border-l-[#198754] bg-[#eef8f2] px-2.5 py-2 text-[13px] font-bold leading-6 text-[#145c38]">
+
+                    <div class="flex-1">
+
+                        Total Gatepass =
+                        ${formatNumber(vehicleTotal.gatePass)}
+                        pcs,
+
+                        Total Challan =
+                        ${formatNumber(vehicleTotal.challan)}
+                        pcs,
+
+                        Total QTY =
+                        ${formatNumber(vehicleTotal.quantity)}
+                        pcs/mtr/yrd,
+
+                        ${formatNumber(vehicleTotal.bagCtn)}
+                        CTN's/Bag's
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="copy-summary-btn shrink-0 rounded bg-[#198754] px-3 py-1.5 text-[11px] font-bold text-white hover:bg-[#146c43]"
+                        data-vehicle="${escapeHtml(vehicle)}"
+                        onclick='copyVehicleSummary(
+                            ${JSON.stringify(vehicle)},
+                            ${JSON.stringify(vehicleTotal)}
+                        )'
+                    >
+                        📋 Copy Text
+                    </button>
+
+                </div>
+
+
+                <div class="w-full overflow-x-auto">
+
+                    <table class="vehicle-table w-full border-collapse text-xs">
+
+                        <tbody>
+
+                            <tr class="vehicle-total-row">
+
+                                <td>
+                                    ${escapeHtml(
+                                        vehicleTotal.label
+                                    )}
+                                </td>
+
+                                <td>
+                                    Gatepass =
+                                    ${formatNumber(
+                                        vehicleTotal.gatePass
+                                    )}
+                                </td>
+
+                                <td>
+                                    Challan =
+                                    ${formatNumber(
+                                        vehicleTotal.challan
+                                    )}
+                                </td>
+
+                                <td>
+                                    Quantity =
+                                    ${formatNumber(
+                                        vehicleTotal.quantity
+                                    )}
+                                </td>
+
+                                <td>
+                                    Net Weight =
+                                    ${formatNumber(
+                                        vehicleTotal.netWeight
+                                    )}
+                                </td>
+
+                                <td>
+                                    Bag/Ctn =
+                                    ${formatNumber(
+                                        vehicleTotal.bagCtn
+                                    )}
+                                </td>
+
+                            </tr>
+
+            `;
+
+
+            customerGroups.forEach(
+                (customerRows, customer) => {
+
+                    const customerSummary =
+                        makeSummary(
+                            customer,
+                            customerRows
+                        );
+
+                    html += `
+
+                        <tr class="customer-row">
+
+                            <td>
+                                ${escapeHtml(
+                                    customerSummary.label
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatNumber(
+                                    customerSummary.gatePass
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatNumber(
+                                    customerSummary.challan
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatNumber(
+                                    customerSummary.quantity
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatNumber(
+                                    customerSummary.netWeight
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatNumber(
+                                    customerSummary.bagCtn
+                                )}
+                            </td>
+
+                        </tr>
+
+                    `;
+
+
+                    const gateGroups =
+                        new Map();
+
+                    customerRows.forEach(row => {
+
+                        const gate =
+                            row.gatePass ||
+                            "Unknown";
+
+                        if (
+                            !gateGroups.has(gate)
+                        ) {
+
+                            gateGroups.set(
+                                gate,
+                                []
+                            );
+
+                        }
+
+                        gateGroups
+                            .get(gate)
+                            .push(row);
+
+                    });
+
+
+                    gateGroups.forEach(
+                        (gateRows, gate) => {
+
+                            const gateSummary =
+                                makeSummary(
+                                    gate,
+                                    gateRows
+                                );
+
+                            html += `
+
+                                <tr class="gate-row">
+
+                                    <td>
+                                        ${escapeHtml(
+                                            gateSummary.label
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatNumber(
+                                            gateSummary.gatePass
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatNumber(
+                                            gateSummary.challan
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatNumber(
+                                            gateSummary.quantity
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatNumber(
+                                            gateSummary.netWeight
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatNumber(
+                                            gateSummary.bagCtn
+                                        )}
+                                    </td>
+
+                                </tr>
+
+                            `;
+
+                        }
+                    );
+
+                }
+            );
+
+
+            html += `
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            `;
+
+
+            block.innerHTML = html;
+
+            container.appendChild(block);
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   PRINT
+===================================================== */
+
+function printPDF() {
+
+    const report =
+        document.getElementById(
+            "vehicleTables"
+        );
+
+    if (
+        !report ||
+        report.innerText.trim() === "" ||
+        report.innerText.includes(
+            "Generate report"
+        )
+    ) {
+
+        alert(
+            "Please generate report first."
+        );
+
+        return;
+
+    }
+
+    window.print();
+
+}
+
+
+/* =====================================================
+   DOWNLOAD PDF
+===================================================== */
+
+function downloadPDF() {
+
+    const report =
+        document.getElementById(
+            "vehicleTables"
+        );
+
+    if (
+        !report ||
+        report.innerText.trim() === "" ||
+        report.innerText.includes(
+            "Generate report"
+        )
+    ) {
+
+        alert(
+            "Please generate report first."
+        );
+
+        return;
+
+    }
+
+    window.print();
+
+}
+
+
+/* =====================================================
+   CLEAR PASTE
+===================================================== */
+
+function clearPaste() {
+
+    document.getElementById(
+        "pasteInput"
+    ).value = "";
+
+    inputRows = [];
+
+    document.getElementById(
+        "inputTableCard"
+    ).classList.add("hidden");
+
+    document.getElementById(
+        "inputTableBody"
+    ).innerHTML = "";
+
+    document.getElementById(
+        "gateOutDateFilter"
+    ).innerHTML = "";
+
+    document.getElementById(
+        "pasteStatus"
+    ).innerHTML = "";
+
+}
+
+
+/* =====================================================
+   CLEAR ALL
+===================================================== */
+
+function clearAll() {
+
+    excelRows = [];
+
+    inputRows = [];
+
+    document.getElementById(
+        "excelFile"
+    ).value = "";
+
+    document.getElementById(
+        "pasteInput"
+    ).value = "";
+
+    document.getElementById(
+        "fileStatus"
+    ).innerHTML =
+        "No Excel file selected.";
+
+    document.getElementById(
+        "pasteStatus"
+    ).innerHTML = "";
+
+    document.getElementById(
+        "inputTableCard"
+    ).classList.add("hidden");
+
+    document.getElementById(
+        "inputTableBody"
+    ).innerHTML = "";
+
+    document.getElementById(
+        "gateOutDateFilter"
+    ).innerHTML = "";
+
+    document.getElementById(
+        "vehicleTables"
+    ).innerHTML = `
+
+        <div class="py-[25px] text-center text-[#777]">
+            Generate report to view data
+        </div>
+
+    `;
+
+    document.getElementById(
+        "reportDate"
+    ).innerText = "";
+
+}
+
+
+/* =====================================================
+   CTRL + P
+===================================================== */
+
+document.addEventListener(
+    "keydown",
+    function(e) {
+
+        if (
+            (e.ctrlKey || e.metaKey) &&
+            e.key.toLowerCase() === "p"
+        ) {
+
+            e.preventDefault();
+
+            printPDF();
+
+        }
+
+    }
+);
+
+</script>
+<script src="js/script.js"></script>
 </body>
-
 </html>
