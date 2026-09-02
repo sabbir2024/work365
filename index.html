@@ -12,8 +12,10 @@
 
     <title>Work 365</title>
 
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
 
     <!-- Main CSS -->
     <link
@@ -21,52 +23,198 @@
         href="css/index.css"
     >
 
+
+    <style>
+
+        /* =========================================
+           PIN CELL STYLE
+        ========================================== */
+
+        .pin-cell {
+
+            width: 42px;
+            height: 48px;
+
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+
+            background: #ffffff;
+
+            color: #111827;
+
+            text-align: center;
+
+            font-size: 20px;
+            font-weight: 600;
+
+            outline: none;
+
+            transition: all 0.2s ease;
+
+        }
+
+
+        .pin-cell:focus {
+
+            border-color: #2563eb;
+
+            box-shadow:
+                0 0 0 3px rgba(37, 99, 235, 0.15);
+
+        }
+
+
+        .pin-cell:hover {
+
+            border-color: #9ca3af;
+
+        }
+
+
+        /* Mobile */
+
+        @media (max-width: 400px) {
+
+            .pin-cell {
+
+                width: 38px;
+                height: 44px;
+
+                font-size: 18px;
+
+            }
+
+        }
+
+    </style>
+
 </head>
 
 
-<body class="bg-gray-100">
+<body>
+
 
     <!-- =========================================
-         PIN LOCK
+         PIN LOCK SCREEN
     ========================================== -->
 
     <div
         id="pinLock"
-        class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900 px-4"
     >
 
-        <div class="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
+        <div
+            class="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl"
+        >
 
-            <div class="mb-6 text-center">
 
-                <h1 class="text-2xl font-bold text-gray-800">
+            <!-- Logo / Title -->
+
+            <div class="mb-7 text-center">
+
+                <h1
+                    class="text-2xl font-bold text-gray-800"
+                >
                     Work 365
                 </h1>
 
-                <p class="mt-2 text-sm text-gray-500">
+                <p
+                    class="mt-2 text-sm text-gray-500"
+                >
                     Enter PIN to continue
                 </p>
 
             </div>
 
 
-            <input
-                id="pinInput"
-                type="password"
-                inputmode="numeric"
-                maxlength="6"
-                placeholder="Enter PIN"
-                class="w-full rounded-lg border border-gray-300 px-4 py-3 text-center text-lg tracking-[0.5em] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            <!-- =====================================
+                 PIN CELLS
+            ====================================== -->
+
+            <div
+                id="pinCells"
+                class="flex justify-center gap-2"
             >
 
+                <input
+                    type="text"
+                    maxlength="1"
+                    inputmode="numeric"
+                    pattern="[0-9]"
+                    class="pin-cell"
+                    autocomplete="off"
+                    aria-label="PIN digit 1"
+                >
+
+                <input
+                    type="text"
+                    maxlength="1"
+                    inputmode="numeric"
+                    pattern="[0-9]"
+                    class="pin-cell"
+                    autocomplete="off"
+                    aria-label="PIN digit 2"
+                >
+
+                <input
+                    type="text"
+                    maxlength="1"
+                    inputmode="numeric"
+                    pattern="[0-9]"
+                    class="pin-cell"
+                    autocomplete="off"
+                    aria-label="PIN digit 3"
+                >
+
+                <input
+                    type="text"
+                    maxlength="1"
+                    inputmode="numeric"
+                    pattern="[0-9]"
+                    class="pin-cell"
+                    autocomplete="off"
+                    aria-label="PIN digit 4"
+                >
+
+                <input
+                    type="text"
+                    maxlength="1"
+                    inputmode="numeric"
+                    pattern="[0-9]"
+                    class="pin-cell"
+                    autocomplete="off"
+                    aria-label="PIN digit 5"
+                >
+
+                <input
+                    type="text"
+                    maxlength="1"
+                    inputmode="numeric"
+                    pattern="[0-9]"
+                    class="pin-cell"
+                    autocomplete="off"
+                    aria-label="PIN digit 6"
+                >
+
+            </div>
+
+
+            <!-- =====================================
+                 UNLOCK BUTTON
+            ====================================== -->
 
             <button
+                type="button"
                 onclick="checkPIN()"
-                class="mt-4 w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700"
+                class="mt-5 w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 active:bg-blue-800"
             >
                 Unlock
             </button>
 
+
+            <!-- =====================================
+                 ERROR MESSAGE
+            ====================================== -->
 
             <p
                 id="pinError"
@@ -74,6 +222,7 @@
             >
                 Incorrect PIN. Please try again.
             </p>
+
 
         </div>
 
@@ -113,60 +262,303 @@
 
 
     <!-- =========================================
-         PIN LOCK SCRIPT
+         PIN LOCK JAVASCRIPT
     ========================================== -->
 
     <script>
 
+        /* =========================================
+           SETTINGS
+        ========================================== */
+
         const CORRECT_PIN = "122333";
 
+        const pinCells =
+            document.querySelectorAll(".pin-cell");
+
+        const pinLock =
+            document.getElementById("pinLock");
+
+        const pinError =
+            document.getElementById("pinError");
+
+
+        /* =========================================
+           CHECK SESSION
+        ========================================== */
+
+        if (
+            sessionStorage.getItem(
+                "work365_unlocked"
+            ) === "true"
+        ) {
+
+            pinLock.style.display = "none";
+
+        } else {
+
+            pinCells[0].focus();
+
+        }
+
+
+        /* =========================================
+           PIN INPUT
+        ========================================== */
+
+        pinCells.forEach((cell, index) => {
+
+
+            /* -------------------------------------
+               Input
+            ------------------------------------- */
+
+            cell.addEventListener(
+                "input",
+                function () {
+
+                    // Only allow numbers
+
+                    this.value =
+                        this.value.replace(/\D/g, "");
+
+
+                    // Move to next cell
+
+                    if (
+                        this.value &&
+                        index < pinCells.length - 1
+                    ) {
+
+                        pinCells[index + 1].focus();
+
+                    }
+
+
+                    // Auto check when all 6 digits entered
+
+                    if (
+                        index === pinCells.length - 1 &&
+                        this.value
+                    ) {
+
+                        checkPIN();
+
+                    }
+
+                }
+            );
+
+
+            /* -------------------------------------
+               Keyboard
+            ------------------------------------- */
+
+            cell.addEventListener(
+                "keydown",
+                function (event) {
+
+
+                    // Backspace
+
+                    if (
+                        event.key === "Backspace" &&
+                        !this.value &&
+                        index > 0
+                    ) {
+
+                        pinCells[index - 1].focus();
+
+                    }
+
+
+                    // Arrow Left
+
+                    if (
+                        event.key === "ArrowLeft" &&
+                        index > 0
+                    ) {
+
+                        pinCells[index - 1].focus();
+
+                    }
+
+
+                    // Arrow Right
+
+                    if (
+                        event.key === "ArrowRight" &&
+                        index < pinCells.length - 1
+                    ) {
+
+                        pinCells[index + 1].focus();
+
+                    }
+
+
+                    // Enter
+
+                    if (event.key === "Enter") {
+
+                        checkPIN();
+
+                    }
+
+                }
+            );
+
+
+            /* -------------------------------------
+               Paste PIN
+            ------------------------------------- */
+
+            cell.addEventListener(
+                "paste",
+                function (event) {
+
+                    event.preventDefault();
+
+
+                    const pasted =
+                        (
+                            event.clipboardData ||
+                            window.clipboardData
+                        ).getData("text");
+
+
+                    const numbers =
+                        pasted
+                            .replace(/\D/g, "")
+                            .slice(0, 6);
+
+
+                    numbers
+                        .split("")
+                        .forEach(
+                            (number, i) => {
+
+                                if (pinCells[i]) {
+
+                                    pinCells[i].value =
+                                        number;
+
+                                }
+
+                            }
+                        );
+
+
+                    // Check if complete PIN pasted
+
+                    if (numbers.length === 6) {
+
+                        checkPIN();
+
+                    } else if (numbers.length > 0) {
+
+                        pinCells[
+                            Math.min(
+                                numbers.length,
+                                pinCells.length - 1
+                            )
+                        ].focus();
+
+                    }
+
+                }
+            );
+
+        });
+
+
+        /* =========================================
+           CHECK PIN FUNCTION
+        ========================================== */
 
         function checkPIN() {
 
-            const pinInput = document.getElementById("pinInput");
-            const pinError = document.getElementById("pinError");
-            const pinLock = document.getElementById("pinLock");
 
-            if (pinInput.value === CORRECT_PIN) {
+            let enteredPIN = "";
+
+
+            // Get all digits
+
+            pinCells.forEach(
+                cell => {
+
+                    enteredPIN += cell.value;
+
+                }
+            );
+
+
+            /* -------------------------------------
+               Correct PIN
+            ------------------------------------- */
+
+            if (enteredPIN === CORRECT_PIN) {
+
+
+                // Hide lock screen
 
                 pinLock.style.display = "none";
+
+
+                // Hide error
+
                 pinError.classList.add("hidden");
 
-                // Remember unlock for this browser session
-                sessionStorage.setItem("work365_unlocked", "true");
 
-            } else {
+                // Save session
 
-                pinError.classList.remove("hidden");
+                sessionStorage.setItem(
+                    "work365_unlocked",
+                    "true"
+                );
 
-                pinInput.value = "";
-                pinInput.focus();
+
+            }
+
+
+            /* -------------------------------------
+               Incorrect PIN
+            ------------------------------------- */
+
+            else {
+
+
+                // Only show error when all digits entered
+
+                if (enteredPIN.length === 6) {
+
+                    pinError.classList.remove(
+                        "hidden"
+                    );
+
+
+                    // Clear all cells
+
+                    pinCells.forEach(
+                        cell => {
+
+                            cell.value = "";
+
+                        }
+                    );
+
+
+                    // Focus first cell
+
+                    pinCells[0].focus();
+
+                }
 
             }
 
         }
 
-
-        // Allow Enter key to unlock
-        document
-            .getElementById("pinInput")
-            .addEventListener("keydown", function (event) {
-
-                if (event.key === "Enter") {
-                    checkPIN();
-                }
-
-            });
-
-
-        // Keep unlocked during the current browser session
-        if (sessionStorage.getItem("work365_unlocked") === "true") {
-
-            document.getElementById("pinLock").style.display = "none";
-
-        }
-
     </script>
+
 
 </body>
 
