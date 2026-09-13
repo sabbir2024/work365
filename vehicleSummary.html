@@ -87,7 +87,7 @@
                 display: none !important;
             }
 
-             .header-summary {
+            .header-summary {
                 display: none !important;
             }
 
@@ -242,7 +242,7 @@
 
                 <textarea
                     id="pasteInput"
-                    placeholder="Excel থেকে OGP Date, Gate Out Date, Gate Pass No, Vehicle No সহ data copy করে এখানে paste করুন..."
+                    placeholder="Excel থেকে OGP Date, Gate Out Date, Gate Pass No, Vehicle No, Driver Name সহ data copy করে এখানে paste করুন..."
                     class="min-h-[180px] w-full resize-y rounded-[7px] border border-[#cbd5df] p-3 font-mono text-[13px]"
                 ></textarea>
 
@@ -406,6 +406,12 @@
                                     class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white"
                                 >
                                     Vehicle No
+                                </th>
+
+                                <th
+                                    class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white"
+                                >
+                                    Driver Name
                                 </th>
 
                                 <th
@@ -1109,6 +1115,20 @@ function preparePastedData() {
                 ]
             );
 
+        /* =============================================
+           NEW: DRIVER NAME
+        ============================================== */
+
+        const driverCol =
+            findColumn(
+                row,
+                [
+                    "Driver Name",
+                    "Driver",
+                    "DriverName"
+                ]
+            );
+
         return {
 
             ogpDate:
@@ -1129,6 +1149,11 @@ function preparePastedData() {
             vehicle:
                 vehicleCol
                     ? row[vehicleCol]
+                    : "",
+
+            driverName:
+                driverCol
+                    ? row[driverCol]
                     : ""
 
         };
@@ -1569,6 +1594,17 @@ function renderInputTable() {
 
                 <td class="border border-[#cbd5df] p-[5px]">
 
+                    <input
+                        type="text"
+                        value="${escapeHtml(row.driverName)}"
+                        onchange="updateInputRow(${index}, 'driverName', this.value)"
+                        class="w-full min-w-[150px] rounded border border-[#d1d9e0] p-1.5 text-xs outline-none focus:border-[#1677c8] focus:ring-2 focus:ring-blue-200"
+                    >
+
+                </td>
+
+                <td class="border border-[#cbd5df] p-[5px]">
+
                     <button
                         class="rounded bg-[#dc3545] px-2 py-1 text-[11px] font-bold text-white hover:opacity-90"
                         onclick="removeInputRow(${index})"
@@ -1648,7 +1684,8 @@ function addInputRow() {
         ogpDate: "",
         gateOutDate: "",
         gatePass: "",
-        vehicle: ""
+        vehicle: "",
+        driverName: ""
 
     });
 
@@ -1792,11 +1829,74 @@ function getMatchedRows(excelData, pastedData) {
 
         }
 
-        if (row.vehicle) {
+        /*
+         * =================================================
+         * NEW DRIVER LOGIC
+         *
+         * By Van / By Hand হলে:
+         * প্রতিটি Driver Name আলাদা group হবে।
+         * =================================================
+         */
+
+        const vehicle =
+            String(row.vehicle || "").trim();
+
+        const normalizedVehicle =
+            normalize(vehicle);
+
+        const isSpecialVehicle =
+            normalizedVehicle === "BY VAN" ||
+            normalizedVehicle === "BY HAND";
+
+        if (isSpecialVehicle) {
+
+            /*
+             * Driver Name comma / semicolon /
+             * slash দিয়ে একাধিক থাকলেও আলাদা করা হবে।
+             */
+
+            const driverNames =
+                String(
+                    row.driverName || ""
+                )
+                .split(/[,;\/]+/)
+                .map(name => name.trim())
+                .filter(Boolean);
+
+            if (driverNames.length) {
+
+                driverNames.forEach(driver => {
+
+                    vehicleMap
+                        .get(key)
+                        .push({
+                            vehicle: vehicle,
+                            driverName: driver
+                        });
+
+                });
+
+            }
+            else {
+
+                vehicleMap
+                    .get(key)
+                    .push({
+                        vehicle: vehicle,
+                        driverName: ""
+                    });
+
+            }
+
+        }
+        else {
 
             vehicleMap
                 .get(key)
-                .push(row.vehicle);
+                .push({
+                    vehicle: vehicle,
+                    driverName: ""
+                });
 
         }
 
@@ -1817,14 +1917,8 @@ function getMatchedRows(excelData, pastedData) {
             const key =
                 normalize(row.gatePass);
 
-            const vehicles = [
-                ...new Set(
-                    (
-                        vehicleMap.get(key) ||
-                        []
-                    ).filter(Boolean)
-                )
-            ];
+            const assignments =
+                vehicleMap.get(key) || [];
 
             return {
 
@@ -1837,7 +1931,7 @@ function getMatchedRows(excelData, pastedData) {
                     ),
 
                 matchedVehicles:
-                    vehicles
+                    assignments
 
             };
 
@@ -2104,6 +2198,11 @@ function generateReport() {
             vehicle:
                 String(
                     row.vehicle || ""
+                ).trim(),
+
+            driverName:
+                String(
+                    row.driverName || ""
                 ).trim()
 
         }));
@@ -2151,24 +2250,31 @@ function generateReport() {
 
     }
 
+
+    /* =================================================
+       VEHICLE GROUPS
+    ================================================= */
+
     const vehicleGroups =
         new Map();
 
+
     matchedRows.forEach(row => {
 
-        let vehicles =
-            row.matchedVehicles;
+        const assignments =
+            row.matchedVehicles || [];
 
-        if (!vehicles.length) {
 
-            vehicles = [
+        /*
+         * যদি কোনো assignment না পাওয়া যায়,
+         * তাহলে Excel-এর vehicle ব্যবহার হবে।
+         */
+
+        if (!assignments.length) {
+
+            const vehicle =
                 row.vehicle ||
-                "Unknown"
-            ];
-
-        }
-
-        vehicles.forEach(vehicle => {
+                "Unknown";
 
             const key =
                 vehicle.trim() ||
@@ -2189,19 +2295,91 @@ function generateReport() {
                 .get(key)
                 .push(row);
 
+            return;
+
+        }
+
+
+        /*
+         * প্রতিটি vehicle/driver assignment
+         * আলাদা table group করবে।
+         */
+
+        assignments.forEach(assignment => {
+
+            const baseVehicle =
+                String(
+                    assignment.vehicle || ""
+                ).trim() ||
+                "Unknown";
+
+            const normalizedVehicle =
+                normalize(baseVehicle);
+
+            const isSpecialVehicle =
+                normalizedVehicle === "BY VAN" ||
+                normalizedVehicle === "BY HAND";
+
+
+            let displayVehicle;
+
+
+            if (
+                isSpecialVehicle &&
+                assignment.driverName
+            ) {
+
+                displayVehicle =
+                    baseVehicle +
+                    " - Driver Name: " +
+                    assignment.driverName;
+
+            }
+            else {
+
+                displayVehicle =
+                    baseVehicle;
+
+            }
+
+
+            const key =
+                displayVehicle.trim() ||
+                "Unknown";
+
+
+            if (
+                !vehicleGroups.has(key)
+            ) {
+
+                vehicleGroups.set(
+                    key,
+                    []
+                );
+
+            }
+
+
+            vehicleGroups
+                .get(key)
+                .push(row);
+
         });
 
     });
 
+
     renderVehicleWise(
         vehicleGroups
     );
+
 
     document.getElementById(
         "reportDate"
     ).innerText =
         "Generated: " +
         new Date().toLocaleString();
+
 
     status.style.color =
         "#198754";
@@ -2227,6 +2405,7 @@ function renderVehicleWise(vehicleGroups) {
 
     container.innerHTML = "";
 
+
     vehicleGroups.forEach(
         (rows, vehicle) => {
 
@@ -2238,6 +2417,7 @@ function renderVehicleWise(vehicleGroups) {
 
             const customerGroups =
                 new Map();
+
 
             rows.forEach(row => {
 
@@ -2264,6 +2444,7 @@ function renderVehicleWise(vehicleGroups) {
 
             });
 
+
             const block =
                 document.createElement(
                     "div"
@@ -2271,6 +2452,7 @@ function renderVehicleWise(vehicleGroups) {
 
             block.className =
                 "vehicle-block mb-5 break-inside-avoid";
+
 
             let html = `
 
@@ -2429,6 +2611,7 @@ function renderVehicleWise(vehicleGroups) {
 
                     const gateGroups =
                         new Map();
+
 
                     customerRows.forEach(row => {
 
@@ -2709,6 +2892,8 @@ document.addEventListener(
 );
 
 </script>
+
 <script src="js/script.js"></script>
+
 </body>
 </html>
