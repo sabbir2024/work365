@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-
 
 <meta charset="UTF-8">
 
@@ -15,290 +13,315 @@
 <title>Gate Pass Vehicle Wise Summary</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
 
-    /* =====================================================
-       PRINT
-    ===================================================== */
+@media print {
 
-    @media print {
-
-        @page {
-            size: A4 portrait;
-            margin: 7mm;
-        }
-
-        html,
-        body {
-            width: 210mm;
-            background: white !important;
-            margin: 0;
-            padding: 0;
-        }
-
-        .no-print {
-            display: none !important;
-        }
-
-        .report-wrapper {
-            width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-        }
-
-        .report-actions {
-            display: none !important;
-        }
-
-        .report-header {
-            margin-bottom: 8px !important;
-        }
-
-        .report-header h2 {
-            font-size: 18px !important;
-        }
-
-        .report-header p {
-            font-size: 8px !important;
-        }
-
-        .vehicle-block,
-        .pick-report-block,
-        .without-grn-block {
-            margin-bottom: 8px !important;
-            break-inside: avoid;
-            page-break-inside: avoid;
-        }
-
-        .vehicle-title {
-            font-size: 10px !important;
-            padding: 4px 6px !important;
-        }
-
-        .vehicle-total-summary,
-        .header-summary {
-            display: none !important;
-        }
-
-        .copy-summary-btn {
-            display: none !important;
-        }
-
-        .vehicle-table,
-        .pick-table,
-        .without-grn-table {
-            font-size: 8px !important;
-        }
-
-        .vehicle-table td,
-        .vehicle-table th,
-        .pick-table td,
-        .pick-table th,
-        .without-grn-table td,
-        .without-grn-table th {
-            padding: 3px 4px !important;
-        }
-
-        .vehicle-total-row,
-        .vehicle-total-row td {
-            background: #dceaf7 !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-
-        .customer-row,
-        .customer-row td {
-            background: #f7f9fb !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-
-        .section-total-row,
-        .section-total-row td {
-            background: #d9ead3 !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-
+    @page {
+        size: A4 portrait;
+        margin: 7mm;
     }
 
-
-    /* =====================================================
-       INPUT TABLE
-    ===================================================== */
-
-    .input-table th {
-        position: sticky;
-        top: 0;
-        z-index: 3;
+    html,
+    body {
+        width: 210mm;
+        background: white !important;
+        margin: 0;
+        padding: 0;
     }
 
-
-    /* =====================================================
-       UPLOAD CARD SIZE
-    ===================================================== */
-
-    .upload-grid {
-        align-items: stretch;
+    .no-print {
+        display: none !important;
     }
 
-
-    .upload-card {
-        width: 100%;
-        height: 220px;
-        min-height: 220px;
-        display: flex;
-        flex-direction: column;
+    .report-wrapper {
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
     }
 
-
-    .paste-card {
-        width: 100%;
-        height: 260px;
-        min-height: 260px;
-        display: flex;
-        flex-direction: column;
+    .report-actions {
+        display: none !important;
     }
 
-
-    .paste-card textarea {
-        flex: 1;
-        min-height: 150px;
+    .report-header {
+        margin-bottom: 8px !important;
     }
 
-
-    @media (max-width: 1023px) {
-
-        .upload-card {
-            height: auto;
-            min-height: 220px;
-        }
-
-        .paste-card {
-            height: auto;
-            min-height: 260px;
-        }
-
+    .report-header h2 {
+        font-size: 18px !important;
     }
 
-
-    /* =====================================================
-       VEHICLE TABLE
-    ===================================================== */
-
-    .vehicle-table {
-        width: 100%;
-        border-collapse: collapse;
+    .report-header p {
+        font-size: 8px !important;
     }
 
-
-    .vehicle-table td {
-        border: 1px solid #8996a3;
-        padding: 7px 8px;
-        white-space: nowrap;
-        text-align: right;
+    .vehicle-block,
+    .pick-report-block,
+    .without-grn-block {
+        margin-bottom: 8px !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
     }
 
-
-    .vehicle-table td:first-child {
-        text-align: left;
+    .vehicle-title {
+        font-size: 10px !important;
+        padding: 4px 6px !important;
     }
 
+    .vehicle-customer-row {
+        font-size: 8px !important;
+        padding: 3px 5px !important;
+    }
+
+    .vehicle-total-summary,
+    .header-summary {
+        display: none !important;
+    }
+
+    .copy-summary-btn {
+        display: none !important;
+    }
+
+    .vehicle-table,
+    .pick-table,
+    .without-grn-table {
+        font-size: 8px !important;
+    }
+
+    .vehicle-table td,
+    .vehicle-table th,
+    .pick-table td,
+    .pick-table th,
+    .without-grn-table td,
+    .without-grn-table th {
+        padding: 3px 4px !important;
+    }
 
     .vehicle-total-row,
     .vehicle-total-row td {
         background: #dceaf7 !important;
-        color: #123b66;
-        font-weight: bold;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
-
-    .customer-row {
-        background: #f7f9fb;
-        font-weight: bold;
+    .customer-row,
+    .customer-row td {
+        background: #f7f9fb !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
-
-    .customer-row td:first-child {
-        padding-left: 14px;
+    .section-total-row,
+    .section-total-row td {
+        background: #d9ead3 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
-
-    .gate-row td:first-child {
-        padding-left: 28px;
+    .description-cell {
+        white-space: nowrap !important;
+        max-width: 500px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
-
-    /* =====================================================
-       PICK / WITHOUT GRN TABLE
-    ===================================================== */
-
-    .pick-table,
-    .without-grn-table {
-        width: 100%;
-        border-collapse: collapse;
+    /* Full OGP number print */
+    .ogp-cell {
+        white-space: nowrap !important;
+        max-width: none !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
     }
 
+}
 
-    .pick-table th,
-    .pick-table td,
-    .without-grn-table th,
-    .without-grn-table td {
-        border: 1px solid #8996a3;
-        padding: 6px 8px;
-        white-space: nowrap;
+
+/* =====================================================
+   GENERAL
+===================================================== */
+
+.input-table th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.upload-grid {
+    align-items: stretch;
+}
+
+.upload-card {
+    width: 100%;
+    height: 220px;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+}
+
+.paste-card {
+    width: 100%;
+    height: 260px;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+}
+
+.paste-card textarea {
+    flex: 1;
+    min-height: 150px;
+}
+
+@media (max-width: 1023px) {
+
+    .upload-card {
+        height: auto;
+        min-height: 220px;
     }
 
-
-    .pick-table th,
-    .without-grn-table th {
-        background: #174a7a;
-        color: white;
-        font-weight: bold;
-        text-align: center;
+    .paste-card {
+        height: auto;
+        min-height: 260px;
     }
 
-
-    .pick-summary-row,
-    .pick-summary-row td {
-        background: #eaf4ff !important;
-        color: #123b66;
-        font-weight: bold;
-    }
+}
 
 
-    .without-grn-summary-row,
-    .without-grn-summary-row td {
-        background: #fff3cd !important;
-        color: #664d03;
-        font-weight: bold;
-    }
+/* =====================================================
+   VEHICLE TABLE
+===================================================== */
+
+.vehicle-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vehicle-table td,
+.vehicle-table th {
+    border: 1px solid #8996a3;
+    padding: 7px 8px;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.vehicle-table td:first-child {
+    text-align: left;
+}
+
+.vehicle-table th {
+    background: #174a7a;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+.vehicle-total-row,
+.vehicle-total-row td {
+    background: #dceaf7 !important;
+    color: #123b66;
+    font-weight: bold;
+}
+
+.vehicle-customer-row,
+.vehicle-customer-row td {
+    background: #eef4f8 !important;
+    color: #174a7a;
+    font-weight: bold;
+}
+
+.vehicle-customer-row td:first-child {
+    padding-left: 8px;
+}
+
+.customer-row {
+    background: #f7f9fb;
+    font-weight: bold;
+}
+
+.customer-row td:first-child {
+    padding-left: 14px;
+}
+
+.gate-row td:first-child {
+    padding-left: 28px;
+    font-weight: bold;
+}
+
+.ogp-cell {
+    text-align: left !important;
+    white-space: nowrap !important;
+    min-width: 145px;
+}
+
+.description-cell {
+    text-align: left !important;
+    white-space: nowrap !important;
+    max-width: 650px;
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+}
 
 
-    /* =====================================================
-       SECTION HEADING
-    ===================================================== */
+/* =====================================================
+   PICK / WITHOUT GRN
+===================================================== */
 
-    .section-heading {
-        margin-top: 25px;
-        margin-bottom: 10px;
-        border-radius: 6px;
-        background: #174a7a;
-        color: white;
-        padding: 9px 12px;
-        font-size: 16px;
-        font-weight: bold;
-    }
+.pick-table,
+.without-grn-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pick-table th,
+.pick-table td,
+.without-grn-table th,
+.without-grn-table td {
+    border: 1px solid #8996a3;
+    padding: 6px 8px;
+    white-space: nowrap;
+}
+
+.pick-table th,
+.without-grn-table th {
+    background: #174a7a;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+.pick-summary-row,
+.pick-summary-row td {
+    background: #eaf4ff !important;
+    color: #123b66;
+    font-weight: bold;
+}
+
+.without-grn-summary-row,
+.without-grn-summary-row td {
+    background: #fff3cd !important;
+    color: #664d03;
+    font-weight: bold;
+}
+
+.section-heading {
+    margin-top: 25px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    background: #174a7a;
+    color: white;
+    padding: 9px 12px;
+    font-size: 16px;
+    font-weight: bold;
+}
 
 </style>
 
-
 </head>
+
 
 <body>
 
@@ -306,367 +329,358 @@
 
 <main class="mx-auto max-w-[1500px]">
 
-
-<!-- =====================================================
-     INPUT AREA
-===================================================== -->
-
 <div class="no-print">
 
-    <h1 class="mb-5 text-center text-2xl font-bold text-[#123b66]">
-        Gate Pass Vehicle Wise Summary
-    </h1>
+<h1 class="mb-5 text-center text-2xl font-bold text-[#123b66]">
+    Gate Pass Vehicle Wise Summary
+</h1>
 
 
-    <!-- =================================================
-         1, 2, 3 UPLOAD CARDS
-    ================================================== -->
-
-    <div class="upload-grid grid grid-cols-1 gap-[18px] lg:grid-cols-3">
+<div class="upload-grid grid grid-cols-1 gap-[18px] lg:grid-cols-3">
 
 
-        <!-- =================================================
-             1. GATE PASS EXCEL
-        ================================================== -->
+<!-- =====================================================
+     GATE PASS UPLOAD
+===================================================== -->
 
-        <section
-            class="upload-card rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
-        >
+<section
+    class="upload-card rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+>
+
 <div class="flex">
-<h2 class="mb-3 text-lg font-bold text-[#174a7a]">
-                1. Upload Gate Pass Excel File
-            </h2>
-<!-- SHOW / HIDE BUTTON -->
 
-            <button
-                type="button"
-                id="pasteToggleBtn"
-                onclick="togglePasteGatePass()"
-                class="px-3 py-2 text-sm font-bold text-white hover:opacity-90"
-            >
-                👁 Show
-            </button>
+<h2 class="mb-3 text-lg font-bold text-[#174a7a]">
+    1. Upload Gate Pass Excel File
+</h2>
+
+<button
+    type="button"
+    id="pasteToggleBtn"
+    onclick="togglePasteGatePass()"
+    class="ml-auto h-fit px-3 py-2 text-sm font-bold text-white hover:opacity-90 bg-[#1677c8]"
+>
+    👁 Show
+</button>
+
 </div>
 
-            
 
-            <input
-                type="file"
-                id="excelFile"
-                accept=".xlsx,.xls,.csv"
-                class="w-full rounded-md border border-[#cbd5df] p-2.5"
-            >
-
-
-            <div
-                id="fileStatus"
-                class="mt-2.5 text-sm font-bold"
-            >
-                No Excel file selected.
-            </div>
-
-        </section>
+<input
+    type="file"
+    id="excelFile"
+    accept=".xlsx,.xls,.csv"
+    class="w-full rounded-md border border-[#cbd5df] p-2.5"
+>
 
 
-        <!-- =================================================
-             2. PICK REPORT
-        ================================================== -->
+<div
+    id="fileStatus"
+    class="mt-2.5 text-sm font-bold"
+>
+    No Excel file selected.
+</div>
 
-        <section
-            class="upload-card rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
-        >
-
-            <h2 class="mb-3 text-lg font-bold text-[#174a7a]">
-                2. Upload Pick Report Excel File
-                <span class="text-sm font-normal text-[#777]">
-                    (optional)
-                </span>
-
-                <button
-                    class="py-2.5 font-bold text-white hover:opacity-90"
-                    onclick="generateReport()"
-                >
-                    📩
-                </button>
-
-            </h2>
+</section>
 
 
-            <input
-                type="file"
-                id="pickReportFile"
-                accept=".xlsx,.xls,.csv"
-                class="w-full rounded-md border border-[#cbd5df] p-2.5"
-            >
+<!-- =====================================================
+     PICK REPORT
+===================================================== -->
 
+<section
+    class="upload-card rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+>
 
-            <div
-                id="pickReportStatus"
-                class="mt-2.5 text-sm font-bold"
-            >
-                No Pick Report file selected.
-            </div>
+<h2 class="mb-3 text-lg font-bold text-[#174a7a]">
 
-        </section>
+    2. Upload Pick Report Excel File
 
+    <span class="text-sm font-normal text-[#777]">
+        (optional)
+    </span>
 
-        <!-- =================================================
-             3. WITHOUT GRN / OGP
-        ================================================== -->
-
-        <section
-            class="upload-card rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
-        >
-
-            <h2 class="mb-3 text-lg font-bold text-[#174a7a]">
-                3. Upload Without GRN / OGP Excel File
-                <span class="text-sm font-normal text-[#777]">
-                    (optional)
-                </span>
-
-                <button
-                    class="py-2.5 font-bold text-white hover:opacity-90"
-                    onclick="generateReport()"
-                >
-                    📩
-                </button>
-
-            </h2>
-
-
-            <input
-                type="file"
-                id="withoutGrnFile"
-                accept=".xlsx,.xls,.csv"
-                class="w-full rounded-md border border-[#cbd5df] p-2.5"
-            >
-
-
-            <div
-                id="withoutGrnStatus"
-                class="mt-2.5 text-sm font-bold"
-            >
-                No Without GRN file selected.
-            </div>
-
-        </section>
-
-    </div>
-
-
-    <!-- =================================================
-         4. PASTE GATE PASS DATA
-         
-         IMPORTANT:
-         DEFAULT HIDDEN.
-         
-         ONLY SHOWS WHEN GATE PASS EXCEL IS LOADED.
-    ================================================== -->
-
-    <section
-        id="pasteGatePassSection"
-        class="paste-card mt-[18px] hidden rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)] hidden"
+    <button
+        type="button"
+        class="py-2.5 font-bold text-white hover:opacity-90"
+        onclick="generateReport()"
     >
+        📩
+    </button>
 
-        <div class="mb-3 flex items-center justify-between gap-3 ">
-
-            <h2 class="m-0 text-lg font-bold text-[#174a7a]">
-                4. Paste Gate Pass Data
-            </h2>
-
-        </div>
+</h2>
 
 
-        <!-- =================================================
-             PASTE CONTENT
-             DEFAULT = HIDDEN
-        ================================================== -->
-
-        <div
-            id="pasteGatePassContent"
-            class=""
-        >
-
-            <textarea
-                id="pasteInput"
-                placeholder="Excel থেকে OGP Date, Gate Out Date, Gate Pass No, Vehicle No, Driver Name সহ data copy করে এখানে paste করুন..."
-                class="min-h-[150px] w-full resize-y rounded-[7px] border border-[#cbd5df] p-3 font-mono text-[13px]"
-            ></textarea>
+<input
+    type="file"
+    id="pickReportFile"
+    accept=".xlsx,.xls,.csv"
+    class="w-full rounded-md border border-[#cbd5df] p-2.5"
+>
 
 
-            <div class="mt-3 flex flex-wrap gap-2.5">
+<div
+    id="pickReportStatus"
+    class="mt-2.5 text-sm font-bold"
+>
+    No Pick Report file selected.
+</div>
 
-                <button
-                    class="rounded-md bg-[#198754] px-[18px] py-2.5 font-bold text-white transition hover:opacity-90"
-                    onclick="loadPasteTable()"
-                >
-                    Load Paste Data
-                </button>
-
-
-                <button
-                    class="rounded-md bg-[#f08c00] px-[18px] py-2.5 font-bold text-white transition hover:opacity-90"
-                    onclick="clearPaste()"
-                >
-                    Clear Paste
-                </button>
-
-            </div>
+</section>
 
 
-            <div
-                id="pasteStatus"
-                class="mt-2.5 text-sm font-bold"
-            ></div>
+<!-- =====================================================
+     WITHOUT GRN
+===================================================== -->
 
-        </div>
+<section
+    class="upload-card rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+>
 
-    </section>
+<h2 class="mb-3 text-lg font-bold text-[#174a7a]">
 
+    3. Upload Without GRN / OGP Excel File
 
-    <!-- =================================================
-         5. INPUT TABLE CARD
-    ================================================== -->
+    <span class="text-sm font-normal text-[#777]">
+        (optional)
+    </span>
 
-    <section
-        id="inputTableCard"
-        class="mt-[18px] hidden rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+    <button
+        type="button"
+        class="py-2.5 font-bold text-white hover:opacity-90"
+        onclick="generateReport()"
     >
+        📩
+    </button>
 
-        <h2 class="mb-3 text-lg font-bold text-[#174a7a]">
-            5. Paste Input Table
-        </h2>
-
-
-        <div class="flex flex-col gap-[15px] lg:flex-row">
+</h2>
 
 
-            <!-- FILTER / BUTTONS -->
-
-            <div
-                class="flex w-full flex-col gap-3 lg:w-[270px] lg:shrink-0"
-            >
-
-                <div
-                    class="flex-1 rounded-[7px] border border-[#d6dee7] bg-[#f8fafc] p-2.5"
-                >
-
-                    <label
-                        for="gateOutDateFilter"
-                        class="mb-1.5 block text-[#174a7a]"
-                    >
-                        <b>Gate Out Date</b>
-                    </label>
+<input
+    type="file"
+    id="withoutGrnFile"
+    accept=".xlsx,.xls,.csv"
+    class="w-full rounded-md border border-[#cbd5df] p-2.5"
+>
 
 
-                    <select
-                        id="gateOutDateFilter"
-                        multiple
-                        onchange="renderInputTable()"
-                        class="min-h-[180px] w-full rounded-[5px] border border-[#cbd5df] bg-white p-2"
-                    ></select>
+<div
+    id="withoutGrnStatus"
+    class="mt-2.5 text-sm font-bold"
+>
+    No Without GRN file selected.
+</div>
+
+</section>
+
+</div>
 
 
-                    <small class="mt-1.5 block leading-5 text-[#777]">
-                        একসাথে Date + Blank select করতে
-                        Ctrl / Cmd ব্যবহার করুন
-                    </small>
+<!-- =====================================================
+     PASTE SECTION
+===================================================== -->
 
-                </div>
+<section
+    id="pasteGatePassSection"
+    class="paste-card mt-[18px] hidden rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+>
 
+<div class="mb-3 flex items-center justify-between gap-3">
 
-                <div
-                    class="rounded-[7px] border border-[#d6dee7] bg-[#f8fafc] p-2.5"
-                >
+<h2 class="m-0 text-lg font-bold text-[#174a7a]">
+    4. Paste Gate Pass Data
+</h2>
 
-                    <div class="flex flex-col gap-2.5">
-
-                        <button
-                            class="w-full rounded-md bg-[#1677c8] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
-                            onclick="addInputRow()"
-                        >
-                            + Add Row
-                        </button>
+</div>
 
 
-                        <button
-                            class="w-full rounded-md bg-[#198754] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
-                            onclick="generateReport()"
-                        >
-                            Generate Report
-                        </button>
+<div
+    id="pasteGatePassContent"
+    class="hidden"
+>
+
+<textarea
+    id="pasteInput"
+    placeholder="Excel থেকে OGP Date, Gate Out Date, Gate Pass No, Vehicle No, Driver Name সহ data copy করে এখানে paste করুন..."
+    class="min-h-[150px] w-full resize-y rounded-[7px] border border-[#cbd5df] p-3 font-mono text-[13px]"
+></textarea>
 
 
-                        <button
-                            class="w-full rounded-md bg-[#343a40] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
-                            onclick="clearAll()"
-                        >
-                            Clear All
-                        </button>
+<div class="mt-3 flex flex-wrap gap-2.5">
 
-                    </div>
-
-                </div>
-
-            </div>
+<button
+    type="button"
+    class="rounded-md bg-[#198754] px-[18px] py-2.5 font-bold text-white transition hover:opacity-90"
+    onclick="loadPasteTable()"
+>
+    Load Paste Data
+</button>
 
 
-            <!-- INPUT TABLE -->
+<button
+    type="button"
+    class="rounded-md bg-[#f08c00] px-[18px] py-2.5 font-bold text-white transition hover:opacity-90"
+    onclick="clearPaste()"
+>
+    Clear Paste
+</button>
 
-            <div
-                class="max-h-[500px] min-w-0 flex-1 overflow-auto rounded-[7px] border border-[#ccd6df]"
-            >
-
-                <table
-                    class="input-table w-full border-collapse bg-white text-xs"
-                >
-
-                    <thead>
-
-                        <tr>
-
-                            <th class="w-[45px] whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
-                                #
-                            </th>
-
-                            <th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
-                                OGP Date
-                            </th>
-
-                            <th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
-                                Gate Out Date
-                            </th>
-
-                            <th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
-                                Gate Pass No
-                            </th>
-
-                            <th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
-                                Vehicle No
-                            </th>
-
-                            <th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
-                                Driver Name
-                            </th>
-
-                            <th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
-                                Action
-                            </th>
-
-                        </tr>
-
-                    </thead>
+</div>
 
 
-                    <tbody id="inputTableBody"></tbody>
+<div
+    id="pasteStatus"
+    class="mt-2.5 text-sm font-bold"
+></div>
 
-                </table>
+</div>
 
-            </div>
+</section>
 
-        </div>
 
-    </section>
+<!-- =====================================================
+     INPUT TABLE
+===================================================== -->
+
+<section
+    id="inputTableCard"
+    class="mt-[18px] hidden rounded-[10px] bg-white p-[18px] shadow-[0_2px_10px_rgba(0,0,0,.08)]"
+>
+
+<h2 class="mb-3 text-lg font-bold text-[#174a7a]">
+    5. Paste Input Table
+</h2>
+
+
+<div class="flex flex-col gap-[15px] lg:flex-row">
+
+
+<div
+    class="flex w-full flex-col gap-3 lg:w-[270px] lg:shrink-0"
+>
+
+
+<div
+    class="flex-1 rounded-[7px] border border-[#d6dee7] bg-[#f8fafc] p-2.5"
+>
+
+<label
+    for="gateOutDateFilter"
+    class="mb-1.5 block text-[#174a7a]"
+>
+    <b>Gate Out Date</b>
+</label>
+
+
+<select
+    id="gateOutDateFilter"
+    multiple
+    onchange="renderInputTable()"
+    class="min-h-[180px] w-full rounded-[5px] border border-[#cbd5df] bg-white p-2"
+></select>
+
+
+<small class="mt-1.5 block leading-5 text-[#777]">
+    একসাথে Date + Blank select করতে
+    Ctrl / Cmd ব্যবহার করুন
+</small>
+
+</div>
+
+
+<div
+    class="rounded-[7px] border border-[#d6dee7] bg-[#f8fafc] p-2.5"
+>
+
+<div class="flex flex-col gap-2.5">
+
+
+<button
+    type="button"
+    class="w-full rounded-md bg-[#1677c8] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
+    onclick="addInputRow()"
+>
+    + Add Row
+</button>
+
+
+<button
+    type="button"
+    class="w-full rounded-md bg-[#198754] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
+    onclick="generateReport()"
+>
+    Generate Report
+</button>
+
+
+<button
+    type="button"
+    class="w-full rounded-md bg-[#343a40] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
+    onclick="clearAll()"
+>
+    Clear All
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div
+    class="max-h-[500px] min-w-0 flex-1 overflow-auto rounded-[7px] border border-[#ccd6df]"
+>
+
+<table
+    class="input-table w-full border-collapse bg-white text-xs"
+>
+
+<thead>
+
+<tr>
+
+<th class="w-[45px] whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
+    #
+</th>
+
+<th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
+    OGP Date
+</th>
+
+<th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
+    Gate Out Date
+</th>
+
+<th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
+    Gate Pass No
+</th>
+
+<th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
+    Vehicle No
+</th>
+
+<th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
+    Driver Name
+</th>
+
+<th class="whitespace-nowrap border border-[#0e3457] bg-[#174a7a] p-2 text-white">
+    Action
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="inputTableBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
 
 </div>
 
@@ -680,61 +694,54 @@
     class="report-wrapper rounded-[10px] bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,.08)]"
 >
 
-    <div class="report-header mb-[15px] text-center">
 
-        <h2 class="m-0 text-[23px] font-bold text-[#123b66]">
-            Gate Pass Vehicle Wise Summary
-        </h2>
+<div class="report-header mb-[15px] text-center">
 
-
-        <p
-            id="reportDate"
-            class="mt-1 text-xs text-[#666]"
-        ></p>
-
-    </div>
+<h2 class="m-0 text-[23px] font-bold text-[#123b66]">
+    Gate Pass Vehicle Wise Summary
+</h2>
 
 
-    <!-- REPORT ACTIONS -->
+<p
+    id="reportDate"
+    class="mt-1 text-xs text-[#666]"
+></p>
 
-    <div
-        class="report-actions no-print mb-[15px] flex flex-wrap justify-center gap-2.5"
-    >
-
-        <button
-            class="min-w-[130px] rounded-md bg-[#1677c8] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
-            onclick="printPDF()"
-        >
-            🖨 Print
-        </button>
-
-    </div>
+</div>
 
 
-    <!-- GATE PASS REPORT -->
+<div
+    class="report-actions no-print mb-[15px] flex flex-wrap justify-center gap-2.5"
+>
 
-    <div id="vehicleTables">
+<button
+    type="button"
+    class="min-w-[130px] rounded-md bg-[#1677c8] px-[18px] py-2.5 font-bold text-white hover:opacity-90"
+    onclick="printPDF()"
+>
+    🖨 Print
+</button>
 
-        <div class="py-[25px] text-center text-[#777]">
-            Generate report to view data
-        </div>
-
-    </div>
-
-
-    <!-- PICK REPORT -->
-
-    <div id="pickReportArea"></div>
+</div>
 
 
-    <!-- WITHOUT GRN -->
+<div id="vehicleTables">
 
-    <div id="withoutGrnArea"></div>
+<div class="py-[25px] text-center text-[#777]">
+    Generate report to view data
+</div>
+
+</div>
+
+
+<div id="pickReportArea"></div>
+
+<div id="withoutGrnArea"></div>
 
 </section>
 
-
 </main>
+
 
 <script>
 
@@ -788,11 +795,8 @@ loadHeaderComponent();
 ===================================================== */
 
 let excelRows = [];
-
 let inputRows = [];
-
 let pickReportRows = [];
-
 let withoutGrnRows = [];
 
 
@@ -981,7 +985,6 @@ function findColumn(row, names) {
 
     }
 
-
     for (const name of names) {
 
         const target =
@@ -1012,7 +1015,7 @@ function findColumn(row, names) {
 
 
 /* =====================================================
-   READ EXCEL FILE
+   READ EXCEL
 ===================================================== */
 
 function readExcelFile(file, callback) {
@@ -1025,10 +1028,8 @@ function readExcelFile(file, callback) {
 
     }
 
-
     const reader =
         new FileReader();
-
 
     reader.onload =
         function(e) {
@@ -1040,7 +1041,6 @@ function readExcelFile(file, callback) {
                         e.target.result
                     );
 
-
                 const workbook =
                     XLSX.read(
                         data,
@@ -1050,12 +1050,10 @@ function readExcelFile(file, callback) {
                         }
                     );
 
-
                 const sheet =
                     workbook.Sheets[
                         workbook.SheetNames[0]
                     ];
-
 
                 const rows =
                     XLSX.utils.sheet_to_json(
@@ -1065,7 +1063,6 @@ function readExcelFile(file, callback) {
                             raw: false
                         }
                     );
-
 
                 callback(rows);
 
@@ -1081,14 +1078,13 @@ function readExcelFile(file, callback) {
 
         };
 
-
     reader.readAsArrayBuffer(file);
 
 }
 
 
 /* =====================================================
-   SHOW / HIDE PASTE SECTION
+   PASTE VISIBILITY
 ===================================================== */
 
 function updatePasteGatePassVisibility() {
@@ -1098,16 +1094,9 @@ function updatePasteGatePassVisibility() {
             "pasteGatePassSection"
         );
 
-
     if (!section) {
         return;
     }
-
-
-    /*
-     * Gate Pass Excel loaded হলে section দেখাবে.
-     * Excel না থাকলে section hide থাকবে.
-     */
 
     if (excelRows.length > 0) {
 
@@ -1119,22 +1108,16 @@ function updatePasteGatePassVisibility() {
 
         section.classList.add("hidden");
 
-        /*
-         * Excel remove হলে Paste content-ও reset
-         */
-
         document
             .getElementById(
                 "pasteGatePassContent"
             )
             ?.classList.add("hidden");
 
-
         const toggleButton =
             document.getElementById(
                 "pasteToggleBtn"
             );
-
 
         if (toggleButton) {
 
@@ -1157,7 +1140,7 @@ function updatePasteGatePassVisibility() {
 
 
 /* =====================================================
-   GATE PASS EXCEL
+   GATE PASS FILE
 ===================================================== */
 
 document
@@ -1169,11 +1152,6 @@ document
             const file =
                 event.target.files[0];
 
-
-            /*
-             * File select না করলে hide
-             */
-
             if (!file) {
 
                 excelRows = [];
@@ -1184,7 +1162,6 @@ document
 
             }
 
-
             readExcelFile(
                 file,
                 function(rows) {
@@ -1194,46 +1171,31 @@ document
                             "fileStatus"
                         );
 
-
                     if (rows === null) {
 
                         excelRows = [];
 
-
                         status.innerHTML =
                             "Error reading Excel file.";
-
 
                         status.style.color =
                             "#dc3545";
 
-
                         updatePasteGatePassVisibility();
-
 
                         return;
 
                     }
 
-
                     excelRows = rows;
-
 
                     status.innerHTML =
                         "Excel loaded successfully: " +
                         excelRows.length +
                         " rows.";
 
-
                     status.style.color =
                         "#198754";
-
-
-                    /*
-                     * IMPORTANT:
-                     * Gate Pass Excel successfully
-                     * loaded হলে Paste section show হবে.
-                     */
 
                     updatePasteGatePassVisibility();
 
@@ -1245,8 +1207,7 @@ document
 
 
 /* =====================================================
-   PICK REPORT UPLOAD
-   COMPLETELY INDEPENDENT
+   PICK REPORT FILE
 ===================================================== */
 
 document
@@ -1262,7 +1223,6 @@ document
                 return;
             }
 
-
             readExcelFile(
                 file,
                 function(rows) {
@@ -1271,7 +1231,6 @@ document
                         document.getElementById(
                             "pickReportStatus"
                         );
-
 
                     if (rows === null) {
 
@@ -1287,15 +1246,12 @@ document
 
                     }
 
-
                     pickReportRows = rows;
-
 
                     status.innerHTML =
                         "Pick Report loaded successfully: " +
                         pickReportRows.length +
                         " rows.";
-
 
                     status.style.color =
                         "#198754";
@@ -1308,8 +1264,7 @@ document
 
 
 /* =====================================================
-   WITHOUT GRN / OGP UPLOAD
-   COMPLETELY INDEPENDENT
+   WITHOUT GRN FILE
 ===================================================== */
 
 document
@@ -1325,7 +1280,6 @@ document
                 return;
             }
 
-
             readExcelFile(
                 file,
                 function(rows) {
@@ -1334,7 +1288,6 @@ document
                         document.getElementById(
                             "withoutGrnStatus"
                         );
-
 
                     if (rows === null) {
 
@@ -1350,15 +1303,12 @@ document
 
                     }
 
-
                     withoutGrnRows = rows;
-
 
                     status.innerHTML =
                         "Without GRN / OGP loaded successfully: " +
                         withoutGrnRows.length +
                         " rows.";
-
 
                     status.style.color =
                         "#198754";
@@ -1371,15 +1321,10 @@ document
 
 
 /* =====================================================
-   PASTE GATE PASS SHOW / HIDE
+   PASTE SHOW / HIDE
 ===================================================== */
 
 function togglePasteGatePass() {
-
-    /*
-     * Safety check:
-     * Gate Pass Excel ছাড়া Paste section use করা যাবে না.
-     */
 
     if (!excelRows.length) {
 
@@ -1391,7 +1336,6 @@ function togglePasteGatePass() {
 
     }
 
-
     const content =
         document.getElementById(
             "pasteGatePassContent"
@@ -1401,7 +1345,6 @@ function togglePasteGatePass() {
         document.getElementById(
             "pasteToggleBtn"
         );
-
 
     if (
         content.classList.contains("hidden")
@@ -1456,10 +1399,11 @@ function prepareExcelData() {
                 [
                     "Gate Pass No",
                     "Gate Pass",
-                    "GatePass No"
+                    "GatePass No",
+                    "OGP No",
+                    "OGP"
                 ]
             );
-
 
         const challanCol =
             findColumn(
@@ -1470,7 +1414,6 @@ function prepareExcelData() {
                 ]
             );
 
-
         const qtyCol =
             findColumn(
                 row,
@@ -1479,7 +1422,6 @@ function prepareExcelData() {
                     "Qty"
                 ]
             );
-
 
         const weightCol =
             findColumn(
@@ -1491,7 +1433,6 @@ function prepareExcelData() {
                 ]
             );
 
-
         const bagCol =
             findColumn(
                 row,
@@ -1499,10 +1440,11 @@ function prepareExcelData() {
                     "Bag/Ctn",
                     "Bag Ctn",
                     "Bag/Ctns",
-                    "Bag"
+                    "Bag",
+                    "Ctn",
+                    "Carton"
                 ]
             );
-
 
         const customerCol =
             findColumn(
@@ -1513,7 +1455,6 @@ function prepareExcelData() {
                     "Buyer Name"
                 ]
             );
-
 
         const locationCol =
             findColumn(
@@ -1526,16 +1467,27 @@ function prepareExcelData() {
                 ]
             );
 
-
-        const vehicleCol =
+        const descriptionCol =
             findColumn(
                 row,
                 [
-                    "Vehicle No",
-                    "Vehicle Number"
+                    "Description",
+                    "Item Description",
+                    "Product Description",
+                    "Goods Description",
+                    "Material Description",
+                    "Description of Goods",
+                    "Particulars",
+                    "Item Name"
                 ]
             );
 
+        const rawDescription =
+            descriptionCol
+                ? String(
+                    row[descriptionCol] ?? ""
+                ).trim()
+                : "";
 
         return {
 
@@ -1544,12 +1496,10 @@ function prepareExcelData() {
                     ? String(row[gateCol]).trim()
                     : "",
 
-
             challan:
                 challanCol
                     ? String(row[challanCol]).trim()
                     : "",
-
 
             quantity:
                 numberValue(
@@ -1558,14 +1508,12 @@ function prepareExcelData() {
                         : 0
                 ),
 
-
             netWeight:
                 numberValue(
                     weightCol
                         ? row[weightCol]
                         : 0
                 ),
-
 
             bagCtn:
                 numberValue(
@@ -1574,27 +1522,90 @@ function prepareExcelData() {
                         : 0
                 ),
 
-
             customer:
                 customerCol
                     ? String(row[customerCol]).trim()
                     : "",
-
 
             location:
                 locationCol
                     ? String(row[locationCol]).trim()
                     : "",
 
+            vehicle: "",
 
-            vehicle:
-                vehicleCol
-                    ? String(row[vehicleCol]).trim()
-                    : ""
+            description:
+                normalizeDescription(
+                    rawDescription
+                )
 
         };
 
     });
+
+}
+
+
+/* =====================================================
+   DESCRIPTION NORMALIZE
+===================================================== */
+
+function normalizeDescription(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/<br\s*\/?>/gi, " ")
+        .replace(/[\r\n\t]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+}
+
+
+/* =====================================================
+   UNIQUE DESCRIPTION
+===================================================== */
+
+function getCombinedDescription(rows) {
+
+    const descriptions = [];
+
+    const seen =
+        new Set();
+
+    rows.forEach(row => {
+
+        const description =
+            normalizeDescription(
+                row.description
+            );
+
+        if (!description) {
+            return;
+        }
+
+        const key =
+            normalize(description);
+
+        if (!seen.has(key)) {
+
+            seen.add(key);
+
+            descriptions.push(
+                description
+            );
+
+        }
+
+    });
+
+    return descriptions.join(" | ");
 
 }
 
@@ -1609,21 +1620,17 @@ function parsePastedData(text) {
         return [];
     }
 
-
     const lines =
         text
             .split(/\r?\n/)
             .map(x => x.trim())
             .filter(x => x !== "");
 
-
     if (!lines.length) {
         return [];
     }
 
-
     let delimiter = "\t";
-
 
     if (!lines[0].includes("\t")) {
 
@@ -1637,15 +1644,12 @@ function parsePastedData(text) {
 
     }
 
-
     const headers =
         lines[0]
             .split(delimiter)
             .map(x => normalize(x));
 
-
     const result = [];
-
 
     for (
         let i = 1;
@@ -1656,14 +1660,11 @@ function parsePastedData(text) {
         const cols =
             lines[i].split(delimiter);
 
-
         if (cols.length <= 1) {
             continue;
         }
 
-
         const obj = {};
-
 
         headers.forEach(
             (header, index) => {
@@ -1676,11 +1677,9 @@ function parsePastedData(text) {
             }
         );
 
-
         result.push(obj);
 
     }
-
 
     return result;
 
@@ -1700,7 +1699,6 @@ function preparePastedData() {
             ).value
         );
 
-
     return rows.map(row => {
 
         const ogpDateCol =
@@ -1711,7 +1709,6 @@ function preparePastedData() {
                     "OGPDate"
                 ]
             );
-
 
         const gateOutDateCol =
             findColumn(
@@ -1724,17 +1721,17 @@ function preparePastedData() {
                 ]
             );
 
-
         const gateCol =
             findColumn(
                 row,
                 [
                     "Gate Pass No",
                     "Gate Pass",
-                    "GatePass No"
+                    "GatePass No",
+                    "OGP No",
+                    "OGP"
                 ]
             );
-
 
         const vehicleCol =
             findColumn(
@@ -1744,7 +1741,6 @@ function preparePastedData() {
                     "Vehicle Number"
                 ]
             );
-
 
         const driverCol =
             findColumn(
@@ -1756,7 +1752,6 @@ function preparePastedData() {
                 ]
             );
 
-
         return {
 
             ogpDate:
@@ -1764,24 +1759,20 @@ function preparePastedData() {
                     ? row[ogpDateCol]
                     : "",
 
-
             gateOutDate:
                 gateOutDateCol
                     ? row[gateOutDateCol]
                     : "",
-
 
             gatePass:
                 gateCol
                     ? row[gateCol]
                     : "",
 
-
             vehicle:
                 vehicleCol
                     ? row[vehicleCol]
                     : "",
-
 
             driverName:
                 driverCol
@@ -1809,37 +1800,30 @@ function normalizeDateForFilter(value) {
         return "";
     }
 
-
     let text =
         String(value).trim();
-
 
     let m =
         text.match(
             /^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/
         );
 
-
     if (m) {
 
         const day =
             String(m[1]).padStart(2, "0");
 
-
         const monthNumber =
             parseInt(m[2], 10);
 
-
         const year =
             m[3];
-
 
         const months = [
             "Jan","Feb","Mar","Apr",
             "May","Jun","Jul","Aug",
             "Sep","Oct","Nov","Dec"
         ];
-
 
         if (
             monthNumber >= 1 &&
@@ -1858,15 +1842,12 @@ function normalizeDateForFilter(value) {
 
     }
 
-
     const date =
         new Date(text);
-
 
     if (!isNaN(date.getTime())) {
         return formatGateOutDate(date);
     }
-
 
     return text;
 
@@ -1879,13 +1860,11 @@ function formatGateOutDate(date) {
         String(date.getDate())
             .padStart(2, "0");
 
-
     const months = [
         "Jan","Feb","Mar","Apr",
         "May","Jun","Jul","Aug",
         "Sep","Oct","Nov","Dec"
     ];
-
 
     return (
         day +
@@ -1904,10 +1883,6 @@ function formatGateOutDate(date) {
 
 function loadPasteTable() {
 
-    /*
-     * Gate Pass Excel ছাড়া paste load করা যাবে না.
-     */
-
     if (!excelRows.length) {
 
         alert(
@@ -1918,10 +1893,8 @@ function loadPasteTable() {
 
     }
 
-
     const rows =
         preparePastedData();
-
 
     if (!rows.length) {
 
@@ -1930,42 +1903,33 @@ function loadPasteTable() {
                 "pasteStatus"
             );
 
-
         status.style.color =
             "#dc3545";
 
-
         status.innerText =
             "Please paste valid data first.";
-
 
         return;
 
     }
 
-
     inputRows = rows;
-
 
     document.getElementById(
         "inputTableCard"
     ).classList.remove("hidden");
 
-
     buildGateOutDateFilter();
 
     renderInputTable();
-
 
     const status =
         document.getElementById(
             "pasteStatus"
         );
 
-
     status.style.color =
         "#198754";
-
 
     status.innerText =
         inputRows.length +
@@ -1985,11 +1949,9 @@ function buildGateOutDateFilter() {
             "gateOutDateFilter"
         );
 
-
     if (!select) {
         return;
     }
-
 
     const oldSelected =
         Array.from(
@@ -1998,16 +1960,12 @@ function buildGateOutDateFilter() {
             option => option.value
         );
 
-
     select.innerHTML = "";
-
 
     const dates =
         new Set();
 
-
     let hasBlank = false;
-
 
     inputRows.forEach(row => {
 
@@ -2015,7 +1973,6 @@ function buildGateOutDateFilter() {
             normalizeDateForFilter(
                 row.gateOutDate
             );
-
 
         if (formatted) {
             dates.add(formatted);
@@ -2027,7 +1984,6 @@ function buildGateOutDateFilter() {
 
     });
 
-
     const sortedDates =
         [...dates].sort((a, b) => {
 
@@ -2036,11 +1992,9 @@ function buildGateOutDateFilter() {
                 const parts =
                     x.split("-");
 
-
                 if (parts.length !== 3) {
                     return new Date(x);
                 }
-
 
                 const monthMap = {
                     Jan: 0,
@@ -2057,7 +2011,6 @@ function buildGateOutDateFilter() {
                     Dec: 11
                 };
 
-
                 return new Date(
                     Number(parts[2]),
                     monthMap[parts[1]],
@@ -2066,46 +2019,36 @@ function buildGateOutDateFilter() {
 
             };
 
-
             return parse(a) - parse(b);
 
         });
-
 
     sortedDates.forEach(date => {
 
         const option =
             document.createElement("option");
 
-
         option.value = date;
-
         option.textContent = date;
-
 
         if (oldSelected.includes(date)) {
             option.selected = true;
         }
 
-
         select.appendChild(option);
 
     });
-
 
     if (hasBlank) {
 
         const option =
             document.createElement("option");
 
-
         option.value =
             "__BLANK__";
 
-
         option.textContent =
             "Blank";
-
 
         if (
             oldSelected.includes(
@@ -2114,7 +2057,6 @@ function buildGateOutDateFilter() {
         ) {
             option.selected = true;
         }
-
 
         select.appendChild(option);
 
@@ -2130,11 +2072,9 @@ function getSelectedGateOutDates() {
             "gateOutDateFilter"
         );
 
-
     if (!select) {
         return [];
     }
-
 
     return Array.from(
         select.selectedOptions
@@ -2150,11 +2090,9 @@ function getFilteredInputRows() {
     const selected =
         getSelectedGateOutDates();
 
-
     if (!selected.length) {
         return inputRows;
     }
-
 
     return inputRows.filter(row => {
 
@@ -2163,7 +2101,6 @@ function getFilteredInputRows() {
                 row.gateOutDate
             );
 
-
         if (!date) {
 
             return selected.includes(
@@ -2171,7 +2108,6 @@ function getFilteredInputRows() {
             );
 
         }
-
 
         return selected.includes(date);
 
@@ -2191,13 +2127,10 @@ function renderInputTable() {
             "inputTableBody"
         );
 
-
     tbody.innerHTML = "";
-
 
     const selected =
         getSelectedGateOutDates();
-
 
     inputRows.forEach(
         (row, index) => {
@@ -2207,9 +2140,7 @@ function renderInputTable() {
                     row.gateOutDate
                 );
 
-
             let visible = true;
-
 
             if (selected.length) {
 
@@ -2231,15 +2162,12 @@ function renderInputTable() {
 
             }
 
-
             if (!visible) {
                 return;
             }
 
-
             const tr =
                 document.createElement("tr");
-
 
             tr.innerHTML = `
 
@@ -2295,6 +2223,7 @@ function renderInputTable() {
                 <td class="border border-[#cbd5df] p-[5px]">
 
                     <button
+                        type="button"
                         class="rounded bg-[#dc3545] px-2 py-1 text-[11px] font-bold text-white"
                         onclick="removeInputRow(${index})"
                     >
@@ -2304,7 +2233,6 @@ function renderInputTable() {
                 </td>
 
             `;
-
 
             tbody.appendChild(tr);
 
@@ -2320,7 +2248,6 @@ function updateInputRow(index, field, value) {
         return;
     }
 
-
     inputRows[index][field] =
         value;
 
@@ -2332,15 +2259,12 @@ function refreshDateFilter() {
     const selected =
         getSelectedGateOutDates();
 
-
     buildGateOutDateFilter();
-
 
     const select =
         document.getElementById(
             "gateOutDateFilter"
         );
-
 
     Array.from(select.options)
         .forEach(option => {
@@ -2357,7 +2281,6 @@ function refreshDateFilter() {
             }
 
         });
-
 
     renderInputTable();
 
@@ -2376,7 +2299,6 @@ function addInputRow() {
 
     }
 
-
     inputRows.push({
 
         ogpDate: "",
@@ -2386,7 +2308,6 @@ function addInputRow() {
         driverName: ""
 
     });
-
 
     buildGateOutDateFilter();
 
@@ -2401,9 +2322,7 @@ function removeInputRow(index) {
         return;
     }
 
-
     inputRows.splice(index, 1);
-
 
     buildGateOutDateFilter();
 
@@ -2428,12 +2347,14 @@ function getMappedCustomer(
             location
         );
 
+    if (!combined) {
+        return "Unknown";
+    }
 
     for (const item of customerMap) {
 
         const source =
             normalize(item[0]);
-
 
         if (
             combined === source ||
@@ -2446,7 +2367,6 @@ function getMappedCustomer(
         }
 
     }
-
 
     const checks = [
 
@@ -2487,7 +2407,6 @@ function getMappedCustomer(
 
     ];
 
-
     for (
         const [regex, value]
         of checks
@@ -2498,7 +2417,6 @@ function getMappedCustomer(
         }
 
     }
-
 
     return customer || "Unknown";
 
@@ -2517,24 +2435,19 @@ function getMatchedRows(
     const gatePassSet =
         new Set();
 
-
     const vehicleMap =
         new Map();
-
 
     pastedData.forEach(row => {
 
         const key =
             normalize(row.gatePass);
 
-
         if (!key) {
             return;
         }
 
-
         gatePassSet.add(key);
-
 
         if (!vehicleMap.has(key)) {
 
@@ -2545,21 +2458,17 @@ function getMatchedRows(
 
         }
 
-
         const vehicle =
             String(
                 row.vehicle || ""
             ).trim();
 
-
         const normalizedVehicle =
             normalize(vehicle);
-
 
         const isSpecialVehicle =
             normalizedVehicle === "BY VAN" ||
             normalizedVehicle === "BY HAND";
-
 
         if (isSpecialVehicle) {
 
@@ -2572,7 +2481,6 @@ function getMatchedRows(
                     name => name.trim()
                 )
                 .filter(Boolean);
-
 
             if (driverNames.length) {
 
@@ -2623,7 +2531,6 @@ function getMatchedRows(
 
     });
 
-
     return excelData
 
         .filter(row => {
@@ -2643,10 +2550,8 @@ function getMatchedRows(
                     row.gatePass
                 );
 
-
             const assignments =
                 vehicleMap.get(key) || [];
-
 
             return {
 
@@ -2680,7 +2585,6 @@ function distinctCount(
     const set =
         new Set();
 
-
     rows.forEach(row => {
 
         const value =
@@ -2688,13 +2592,11 @@ function distinctCount(
                 row[field]
             );
 
-
         if (value) {
             set.add(value);
         }
 
     });
-
 
     return set.size;
 
@@ -2813,13 +2715,11 @@ async function copyVehicleSummary(
             summary
         );
 
-
     try {
 
         await navigator.clipboard.writeText(
             text
         );
-
 
         alert(
             "Vehicle summary copied."
@@ -2834,36 +2734,28 @@ async function copyVehicleSummary(
                 "textarea"
             );
 
-
         textarea.value =
             text;
-
 
         textarea.style.position =
             "fixed";
 
-
         textarea.style.left =
             "-9999px";
-
 
         document.body.appendChild(
             textarea
         );
 
-
         textarea.select();
-
 
         document.execCommand(
             "copy"
         );
 
-
         document.body.removeChild(
             textarea
         );
-
 
         alert(
             "Vehicle summary copied."
@@ -2885,10 +2777,8 @@ function generateReport() {
             "pasteStatus"
         );
 
-
     let gateReportGenerated =
         false;
-
 
     if (
         excelRows.length &&
@@ -2897,7 +2787,6 @@ function generateReport() {
 
         const filteredInputRows =
             getFilteredInputRows();
-
 
         const pastedData =
             filteredInputRows.map(
@@ -2921,12 +2810,10 @@ function generateReport() {
                 })
             );
 
-
         if (pastedData.length) {
 
             const excelData =
                 prepareExcelData();
-
 
             const matchedRows =
                 getMatchedRows(
@@ -2934,12 +2821,10 @@ function generateReport() {
                     pastedData
                 );
 
-
             if (matchedRows.length) {
 
                 const vehicleGroups =
                     new Map();
-
 
                 matchedRows.forEach(row => {
 
@@ -2947,18 +2832,15 @@ function generateReport() {
                         row.matchedVehicles ||
                         [];
 
-
                     if (!assignments.length) {
 
                         const vehicle =
                             row.vehicle ||
                             "Unknown";
 
-
                         const key =
                             vehicle.trim() ||
                             "Unknown";
-
 
                         if (
                             !vehicleGroups.has(key)
@@ -2971,16 +2853,13 @@ function generateReport() {
 
                         }
 
-
                         vehicleGroups
                             .get(key)
                             .push(row);
 
-
                         return;
 
                     }
-
 
                     assignments.forEach(
                         assignment => {
@@ -2992,20 +2871,16 @@ function generateReport() {
                                 ).trim() ||
                                 "Unknown";
 
-
                             const normalizedVehicle =
                                 normalize(
                                     baseVehicle
                                 );
 
-
                             const isSpecialVehicle =
                                 normalizedVehicle === "BY VAN" ||
                                 normalizedVehicle === "BY HAND";
 
-
                             let displayVehicle;
-
 
                             if (
                                 isSpecialVehicle &&
@@ -3026,11 +2901,9 @@ function generateReport() {
 
                             }
 
-
                             const key =
                                 displayVehicle.trim() ||
                                 "Unknown";
-
 
                             if (
                                 !vehicleGroups.has(key)
@@ -3043,7 +2916,6 @@ function generateReport() {
 
                             }
 
-
                             vehicleGroups
                                 .get(key)
                                 .push(row);
@@ -3053,11 +2925,9 @@ function generateReport() {
 
                 });
 
-
                 renderVehicleWise(
                     vehicleGroups
                 );
-
 
                 gateReportGenerated =
                     true;
@@ -3119,7 +2989,7 @@ function generateReport() {
 
 
     /* =================================================
-       WITHOUT GRN / OGP
+       WITHOUT GRN
     ================================================= */
 
     if (withoutGrnRows.length) {
@@ -3155,12 +3025,10 @@ function generateReport() {
             "Generated: " +
             new Date().toLocaleString();
 
-
         if (status) {
 
             status.style.color =
                 "#198754";
-
 
             status.innerHTML =
                 "Report generated successfully.";
@@ -3176,7 +3044,6 @@ function generateReport() {
             status.style.color =
                 "#dc3545";
 
-
             status.innerHTML =
                 "Please upload a report file or load Gate Pass data.";
 
@@ -3188,7 +3055,7 @@ function generateReport() {
 
 
 /* =====================================================
-   RENDER VEHICLE WISE
+   VEHICLE WISE REPORT
 ===================================================== */
 
 function renderVehicleWise(
@@ -3200,12 +3067,15 @@ function renderVehicleWise(
             "vehicleTables"
         );
 
-
     container.innerHTML = "";
 
 
     vehicleGroups.forEach(
         (rows, vehicle) => {
+
+            /* =============================================
+               VEHICLE TOTAL
+            ============================================= */
 
             const vehicleTotal =
                 makeSummary(
@@ -3213,6 +3083,10 @@ function renderVehicleWise(
                     rows
                 );
 
+
+            /* =============================================
+               CUSTOMER GROUP
+            ============================================= */
 
             const customerGroups =
                 new Map();
@@ -3246,6 +3120,19 @@ function renderVehicleWise(
             });
 
 
+            /* =============================================
+               CUSTOMER NAME HEADER
+            ============================================= */
+
+            const customerNames =
+                [...customerGroups.keys()]
+                    .join(" | ");
+
+
+            /* =============================================
+               VEHICLE BLOCK
+            ============================================= */
+
             const block =
                 document.createElement(
                     "div"
@@ -3258,6 +3145,10 @@ function renderVehicleWise(
 
             let html = `
 
+                <!-- ======================================
+                     VEHICLE TITLE
+                ====================================== -->
+
                 <div class="vehicle-title rounded-t bg-[#174a7a] px-2.5 py-2 text-[15px] font-bold text-white">
 
                     Vehicle:
@@ -3265,6 +3156,24 @@ function renderVehicleWise(
 
                 </div>
 
+
+                <!-- ======================================
+                     CUSTOMER NAME
+                ====================================== -->
+
+                <div class="vehicle-customer-row border border-t-0 border-[#8996a3] px-2.5 py-2 text-[13px]">
+
+                    Customer Name:
+                    ${escapeHtml(
+                        customerNames || "Unknown"
+                    )}
+
+                </div>
+
+
+                <!-- ======================================
+                     VEHICLE TOTAL
+                ====================================== -->
 
                 <div class="vehicle-total-summary flex items-center justify-between gap-2.5 border border-l-4 border-[#b8dfc8] border-l-[#198754] bg-[#eef8f2] px-2.5 py-2 text-[13px] font-bold leading-6 text-[#145c38]">
 
@@ -3310,62 +3219,65 @@ function renderVehicleWise(
                 </div>
 
 
+                <!-- ======================================
+                     TABLE
+                ====================================== -->
+
                 <div class="w-full overflow-x-auto">
 
                     <table class="vehicle-table w-full border-collapse text-xs">
 
-                        <tbody>
+                        <thead>
 
-                            <tr class="vehicle-total-row">
+                            <tr>
 
-                                <td>
-                                    ${escapeHtml(
-                                        vehicleTotal.label
-                                    )}
-                                </td>
+                                <th>
+                                    OGP
+                                </th>
 
-                                <td>
-                                    Gatepass =
-                                    ${formatNumber(
-                                        vehicleTotal.gatePass
-                                    )}
-                                </td>
+                                <th>
+                                    Gatepass
+                                </th>
 
-                                <td>
-                                    Challan =
-                                    ${formatNumber(
-                                        vehicleTotal.challan
-                                    )}
-                                </td>
+                                <th>
+                                    Challan
+                                </th>
 
-                                <td>
-                                    Quantity =
-                                    ${formatNumber(
-                                        vehicleTotal.quantity
-                                    )}
-                                </td>
+                                <th>
+                                    Quantity
+                                </th>
 
-                                <td>
-                                    Net Weight =
-                                    ${formatNumber(
-                                        vehicleTotal.netWeight
-                                    )}
-                                </td>
+                                <th>
+                                    Net Weight
+                                </th>
 
-                                <td>
-                                    Bag/Ctn =
-                                    ${formatNumber(
-                                        vehicleTotal.bagCtn
-                                    )}
-                                </td>
+                                <th>
+                                    Bag/Ctn
+                                </th>
+
+                                <th class="description-cell">
+                                    Description
+                                </th>
 
                             </tr>
+
+                        </thead>
+
+                        <tbody>
 
             `;
 
 
+            /* =============================================
+               CUSTOMER WISE
+            ============================================= */
+
             customerGroups.forEach(
                 (customerRows, customer) => {
+
+                    /* =====================================
+                       CUSTOMER SUMMARY
+                    ===================================== */
 
                     const customerSummary =
                         makeSummary(
@@ -3374,13 +3286,19 @@ function renderVehicleWise(
                         );
 
 
+                    /*
+                     * CUSTOMER ROW
+                     *
+                     * Description blank.
+                     */
+
                     html += `
 
                         <tr class="customer-row">
 
                             <td>
                                 ${escapeHtml(
-                                    customerSummary.label
+                                    customer
                                 )}
                             </td>
 
@@ -3414,10 +3332,18 @@ function renderVehicleWise(
                                 )}
                             </td>
 
+                            <td class="description-cell">
+                                &nbsp;
+                            </td>
+
                         </tr>
 
                     `;
 
+
+                    /* =====================================
+                       OGP GROUP
+                    ===================================== */
 
                     const gateGroups =
                         new Map();
@@ -3426,9 +3352,19 @@ function renderVehicleWise(
                     customerRows.forEach(
                         row => {
 
+                            /*
+                             * IMPORTANT:
+                             * Keep the COMPLETE Gate Pass No.
+                             *
+                             * Example:
+                             * OGP-221226025966
+                             */
+
                             const gate =
-                                row.gatePass ||
-                                "Unknown";
+                                String(
+                                    row.gatePass ||
+                                    "Unknown"
+                                ).trim();
 
 
                             if (
@@ -3453,6 +3389,10 @@ function renderVehicleWise(
                     );
 
 
+                    /* =====================================
+                       EACH FULL OGP
+                    ===================================== */
+
                     gateGroups.forEach(
                         (gateRows, gate) => {
 
@@ -3463,15 +3403,39 @@ function renderVehicleWise(
                                 );
 
 
+                            /*
+                             * Combine all descriptions
+                             * belonging to this full OGP.
+                             */
+
+                            const description =
+                                getCombinedDescription(
+                                    gateRows
+                                );
+
+
+                            /* =============================
+                               FULL OGP ROW
+                            ============================= */
+
                             html += `
 
                                 <tr class="gate-row">
 
-                                    <td>
+                                    <!-- FULL OGP / GATE PASS NO -->
+
+                                    <td
+                                        class="ogp-cell"
+                                        title="${escapeHtml(
+                                            gate
+                                        )}"
+                                    >
                                         ${escapeHtml(
-                                            gateSummary.label
+                                            gate || "Unknown"
                                         )}
                                     </td>
+
+                                    <!-- GATEPASS COUNT -->
 
                                     <td>
                                         ${formatNumber(
@@ -3479,11 +3443,15 @@ function renderVehicleWise(
                                         )}
                                     </td>
 
+                                    <!-- CHALLAN -->
+
                                     <td>
                                         ${formatNumber(
                                             gateSummary.challan
                                         )}
                                     </td>
+
+                                    <!-- QUANTITY -->
 
                                     <td>
                                         ${formatNumber(
@@ -3491,16 +3459,37 @@ function renderVehicleWise(
                                         )}
                                     </td>
 
+                                    <!-- NET WEIGHT -->
+
                                     <td>
                                         ${formatNumber(
                                             gateSummary.netWeight
                                         )}
                                     </td>
 
+                                    <!-- BAG / CTN -->
+
                                     <td>
                                         ${formatNumber(
                                             gateSummary.bagCtn
                                         )}
+                                    </td>
+
+                                    <!-- DESCRIPTION -->
+
+                                    <td
+                                        class="description-cell"
+                                        title="${escapeHtml(
+                                            description
+                                        )}"
+                                    >
+                                        ${
+                                            description
+                                                ? escapeHtml(
+                                                    description
+                                                  )
+                                                : "&nbsp;"
+                                        }
                                     </td>
 
                                 </tr>
@@ -3556,7 +3545,6 @@ function preparePickRows(rows) {
                 ]
             );
 
-
         const qtyCol =
             findColumn(
                 row,
@@ -3569,7 +3557,6 @@ function preparePickRows(rows) {
                 ]
             );
 
-
         const weightCol =
             findColumn(
                 row,
@@ -3579,7 +3566,6 @@ function preparePickRows(rows) {
                     "Weight"
                 ]
             );
-
 
         const bagCol =
             findColumn(
@@ -3594,7 +3580,6 @@ function preparePickRows(rows) {
                 ]
             );
 
-
         const customerCol =
             findColumn(
                 row,
@@ -3605,6 +3590,38 @@ function preparePickRows(rows) {
                 ]
             );
 
+        const locationCol =
+            findColumn(
+                row,
+                [
+                    "Delilocation",
+                    "Delivery Location",
+                    "DeliveryLocation",
+                    "Location",
+                    "Delivery Address",
+                    "Address"
+                ]
+            );
+
+        const rawCustomer =
+            customerCol
+                ? String(
+                    row[customerCol] ?? ""
+                ).trim()
+                : "";
+
+        const rawLocation =
+            locationCol
+                ? String(
+                    row[locationCol] ?? ""
+                ).trim()
+                : "";
+
+        const mappedCustomer =
+            getMappedCustomer(
+                rawCustomer,
+                rawLocation
+            );
 
         return {
 
@@ -3640,11 +3657,7 @@ function preparePickRows(rows) {
                 ),
 
             customer:
-                customerCol
-                    ? String(
-                        row[customerCol]
-                    ).trim()
-                    : "Unknown"
+                mappedCustomer
 
         };
 
@@ -3660,23 +3673,19 @@ function renderPickReport(rows) {
             "pickReportArea"
         );
 
-
     const prepared =
         preparePickRows(
             rows
         );
 
-
     const customerGroups =
         new Map();
-
 
     prepared.forEach(row => {
 
         const customer =
             row.customer ||
             "Unknown";
-
 
         if (
             !customerGroups.has(
@@ -3691,24 +3700,18 @@ function renderPickReport(rows) {
 
         }
 
-
         customerGroups
             .get(customer)
             .push(row);
 
     });
 
-
     const totalChallanSet =
         new Set();
 
-
     let totalQty = 0;
-
     let totalWeight = 0;
-
     let totalBag = 0;
-
 
     prepared.forEach(row => {
 
@@ -3717,27 +3720,22 @@ function renderPickReport(rows) {
                 row.challan
             );
 
-
         if (challan) {
             totalChallanSet.add(
                 challan
             );
         }
 
-
         totalQty +=
             row.quantity;
 
-
         totalWeight +=
             row.netWeight;
-
 
         totalBag +=
             row.bagCtn;
 
     });
-
 
     let html = `
 
@@ -3746,7 +3744,6 @@ function renderPickReport(rows) {
             <div class="section-heading">
                 Pick Report Customer Wise Summary
             </div>
-
 
             <div class="mb-3 overflow-x-auto">
 
@@ -3780,11 +3777,9 @@ function renderPickReport(rows) {
 
                     </thead>
 
-
                     <tbody>
 
     `;
-
 
     customerGroups.forEach(
         (customerRows, customer) => {
@@ -3792,13 +3787,9 @@ function renderPickReport(rows) {
             const challans =
                 new Set();
 
-
             let qty = 0;
-
             let weight = 0;
-
             let bag = 0;
-
 
             customerRows.forEach(
                 row => {
@@ -3808,28 +3799,23 @@ function renderPickReport(rows) {
                             row.challan
                         );
 
-
                     if (challan) {
                         challans.add(
                             challan
                         );
                     }
 
-
                     qty +=
                         row.quantity;
 
-
                     weight +=
                         row.netWeight;
-
 
                     bag +=
                         row.bagCtn;
 
                 }
             );
-
 
             html += `
 
@@ -3871,7 +3857,6 @@ function renderPickReport(rows) {
 
         }
     );
-
 
     html += `
 
@@ -3917,7 +3902,6 @@ function renderPickReport(rows) {
 
     `;
 
-
     container.innerHTML =
         html;
 
@@ -3942,26 +3926,24 @@ function prepareWithoutGrnRows(
                     [
                         "Gate Pass No",
                         "Gate Pass",
-                        "GatePass No"
+                        "GatePass No",
+                        "OGP No",
+                        "OGP"
                     ]
                 );
-
 
             const gatePass =
                 gatePassCol
                     ? String(
-                        row[gatePassCol] ??
-                        ""
+                        row[gatePassCol] ?? ""
                     ).trim()
                     : "";
-
 
             return normalize(
                 gatePass
             ) === "";
 
         })
-
 
         .map(row => {
 
@@ -3974,7 +3956,6 @@ function prepareWithoutGrnRows(
                     ]
                 );
 
-
             const qtyCol =
                 findColumn(
                     row,
@@ -3984,7 +3965,6 @@ function prepareWithoutGrnRows(
                         "Qty"
                     ]
                 );
-
 
             const customerCol =
                 findColumn(
@@ -3996,17 +3976,47 @@ function prepareWithoutGrnRows(
                     ]
                 );
 
+            const locationCol =
+                findColumn(
+                    row,
+                    [
+                        "Delilocation",
+                        "Delivery Location",
+                        "DeliveryLocation",
+                        "Location",
+                        "Delivery Address",
+                        "Address"
+                    ]
+                );
+
+            const rawCustomer =
+                customerCol
+                    ? String(
+                        row[customerCol] ?? ""
+                    ).trim()
+                    : "";
+
+            const rawLocation =
+                locationCol
+                    ? String(
+                        row[locationCol] ?? ""
+                    ).trim()
+                    : "";
+
+            const mappedCustomer =
+                getMappedCustomer(
+                    rawCustomer,
+                    rawLocation
+                );
 
             return {
 
                 challan:
                     challanCol
                         ? String(
-                            row[challanCol] ??
-                            ""
+                            row[challanCol] ?? ""
                         ).trim()
                         : "",
-
 
                 quantity:
                     numberValue(
@@ -4015,14 +4025,8 @@ function prepareWithoutGrnRows(
                             : 0
                     ),
 
-
                 customer:
-                    customerCol
-                        ? String(
-                            row[customerCol] ??
-                            ""
-                        ).trim()
-                        : "Unknown"
+                    mappedCustomer
 
             };
 
@@ -4044,12 +4048,10 @@ function renderWithoutGrnReport(
             "withoutGrnArea"
         );
 
-
     const prepared =
         prepareWithoutGrnRows(
             rows
         );
-
 
     if (!prepared.length) {
 
@@ -4073,17 +4075,14 @@ function renderWithoutGrnReport(
 
     }
 
-
     const customerGroups =
         new Map();
-
 
     prepared.forEach(row => {
 
         const customer =
             row.customer ||
             "Unknown";
-
 
         if (
             !customerGroups.has(
@@ -4098,20 +4097,16 @@ function renderWithoutGrnReport(
 
         }
 
-
         customerGroups
             .get(customer)
             .push(row);
 
     });
 
-
     const grandChallanSet =
         new Set();
 
-
     let grandQty = 0;
-
 
     prepared.forEach(row => {
 
@@ -4119,7 +4114,6 @@ function renderWithoutGrnReport(
             normalize(
                 row.challan
             );
-
 
         if (challan) {
 
@@ -4129,12 +4123,10 @@ function renderWithoutGrnReport(
 
         }
 
-
         grandQty +=
             row.quantity;
 
     });
-
 
     let html = `
 
@@ -4143,7 +4135,6 @@ function renderWithoutGrnReport(
             <div class="section-heading">
                 NO OGP Wise Summary
             </div>
-
 
             <div class="mb-3 overflow-x-auto">
 
@@ -4169,11 +4160,9 @@ function renderWithoutGrnReport(
 
                     </thead>
 
-
                     <tbody>
 
     `;
-
 
     customerGroups.forEach(
         (customerRows, customer) => {
@@ -4181,9 +4170,7 @@ function renderWithoutGrnReport(
             const challans =
                 new Set();
 
-
             let qty = 0;
-
 
             customerRows.forEach(
                 row => {
@@ -4193,7 +4180,6 @@ function renderWithoutGrnReport(
                             row.challan
                         );
 
-
                     if (challan) {
 
                         challans.add(
@@ -4202,13 +4188,11 @@ function renderWithoutGrnReport(
 
                     }
 
-
                     qty +=
                         row.quantity;
 
                 }
             );
-
 
             html += `
 
@@ -4238,7 +4222,6 @@ function renderWithoutGrnReport(
 
         }
     );
-
 
     html += `
 
@@ -4272,7 +4255,6 @@ function renderWithoutGrnReport(
 
     `;
 
-
     container.innerHTML =
         html;
 
@@ -4289,7 +4271,6 @@ function printPDF() {
         document.getElementById(
             "reportArea"
         );
-
 
     if (
         !report ||
@@ -4312,20 +4293,14 @@ function printPDF() {
             "Please generate report first."
         );
 
-
         return;
 
     }
-
 
     window.print();
 
 }
 
-
-/* =====================================================
-   DOWNLOAD PDF
-===================================================== */
 
 function downloadPDF() {
 
@@ -4344,9 +4319,7 @@ function clearPaste() {
         "pasteInput"
     ).value = "";
 
-
     inputRows = [];
-
 
     document.getElementById(
         "inputTableCard"
@@ -4354,16 +4327,13 @@ function clearPaste() {
         "hidden"
     );
 
-
     document.getElementById(
         "inputTableBody"
     ).innerHTML = "";
 
-
     document.getElementById(
         "gateOutDateFilter"
     ).innerHTML = "";
-
 
     document.getElementById(
         "pasteStatus"
@@ -4379,56 +4349,44 @@ function clearPaste() {
 function clearAll() {
 
     excelRows = [];
-
     inputRows = [];
-
     pickReportRows = [];
-
     withoutGrnRows = [];
-
 
     document.getElementById(
         "excelFile"
     ).value = "";
 
-
     document.getElementById(
         "pickReportFile"
     ).value = "";
-
 
     document.getElementById(
         "withoutGrnFile"
     ).value = "";
 
-
     document.getElementById(
         "pasteInput"
     ).value = "";
-
 
     document.getElementById(
         "fileStatus"
     ).innerHTML =
         "No Excel file selected.";
 
-
     document.getElementById(
         "pickReportStatus"
     ).innerHTML =
         "No Pick Report file selected.";
-
 
     document.getElementById(
         "withoutGrnStatus"
     ).innerHTML =
         "No Without GRN file selected.";
 
-
     document.getElementById(
         "pasteStatus"
     ).innerHTML = "";
-
 
     document.getElementById(
         "inputTableCard"
@@ -4436,16 +4394,13 @@ function clearAll() {
         "hidden"
     );
 
-
     document.getElementById(
         "inputTableBody"
     ).innerHTML = "";
 
-
     document.getElementById(
         "gateOutDateFilter"
     ).innerHTML = "";
-
 
     document.getElementById(
         "vehicleTables"
@@ -4457,48 +4412,36 @@ function clearAll() {
 
     `;
 
-
     document.getElementById(
         "pickReportArea"
     ).innerHTML = "";
-
 
     document.getElementById(
         "withoutGrnArea"
     ).innerHTML = "";
 
-
     document.getElementById(
         "reportDate"
     ).innerText = "";
-
-
-    /*
-     * PASTE SECTION DEFAULT = HIDDEN
-     */
 
     document.getElementById(
         "pasteGatePassSection"
     ).classList.add("hidden");
 
-
     document.getElementById(
         "pasteGatePassContent"
     ).classList.add("hidden");
-
 
     document.getElementById(
         "pasteToggleBtn"
     ).innerHTML =
         "👁 Show";
 
-
     document.getElementById(
         "pasteToggleBtn"
     ).classList.remove(
         "bg-[#6c757d]"
     );
-
 
     document.getElementById(
         "pasteToggleBtn"
@@ -4533,12 +4476,7 @@ document.addEventListener(
 
 </script>
 
-<!-- =====================================================
-     EXISTING SCRIPT
-===================================================== -->
-
 <script src="js/script.js"></script>
 
 </body>
-
 </html>
