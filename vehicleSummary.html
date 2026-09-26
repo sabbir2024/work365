@@ -124,11 +124,13 @@
     }
 
     .description-cell {
-        white-space: nowrap !important;
-        max-width: 500px !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
+    white-space: normal !important;
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+}
 
     /* Full OGP number print */
     .ogp-cell {
@@ -196,8 +198,8 @@
 ===================================================== */
 
 .vehicle-table {
-    width: 100%;
-    border-collapse: collapse;
+    table-layout: auto !important;
+    width: 100% !important;
 }
 
 .vehicle-table td,
@@ -1579,31 +1581,11 @@ function getCombinedDescription(rows) {
     const seen =
         new Set();
 
-    rows.forEach(row => {
+    
 
-        const description =
-            normalizeDescription(
-                row.description
+descriptions.push(
+                rows[0].description
             );
-
-        if (!description) {
-            return;
-        }
-
-        const key =
-            normalize(description);
-
-        if (!seen.has(key)) {
-
-            seen.add(key);
-
-            descriptions.push(
-                description
-            );
-
-        }
-
-    });
 
     return descriptions.join(" | ");
 
@@ -3082,7 +3064,7 @@ function renderVehicleWise(
                     vehicle,
                     rows
                 );
-
+console.log("vehicleTotal", vehicleTotal)
 
             /* =============================================
                CUSTOMER GROUP
@@ -3157,19 +3139,7 @@ function renderVehicleWise(
                 </div>
 
 
-                <!-- ======================================
-                     CUSTOMER NAME
-                ====================================== -->
-
-                <div class="vehicle-customer-row border border-t-0 border-[#8996a3] px-2.5 py-2 text-[13px]">
-
-                    Customer Name:
-                    ${escapeHtml(
-                        customerNames || "Unknown"
-                    )}
-
-                </div>
-
+                
 
                 <!-- ======================================
                      VEHICLE TOTAL
@@ -3232,27 +3202,28 @@ function renderVehicleWise(
                             <tr>
 
                                 <th>
-                                    OGP
+                                    # 
+
                                 </th>
 
                                 <th>
-                                    Gatepass
+                                    Gatepass = ${vehicleTotal.gatePass}
                                 </th>
 
                                 <th>
-                                    Challan
+                                    Challan = ${vehicleTotal.challan}
                                 </th>
 
                                 <th>
-                                    Quantity
+                                    Quantity = ${vehicleTotal.quantity}
                                 </th>
 
                                 <th>
-                                    Net Weight
+                                    Net Weight = ${Number(vehicleTotal.netWeight).toFixed(2)}
                                 </th>
 
                                 <th>
-                                    Bag/Ctn
+                                    Bag/Ctn = ${vehicleTotal.bagCtn}
                                 </th>
 
                                 <th class="description-cell">
@@ -3412,7 +3383,7 @@ function renderVehicleWise(
                                 getCombinedDescription(
                                     gateRows
                                 );
-
+console.log("description===",description)
 
                             /* =============================
                                FULL OGP ROW
