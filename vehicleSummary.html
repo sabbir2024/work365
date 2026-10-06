@@ -124,15 +124,14 @@
     }
 
     .description-cell {
-    white-space: normal !important;
-    max-width: none !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
-}
+        white-space: normal !important;
+        max-width: none !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+    }
 
-    /* Full OGP number print */
     .ogp-cell {
         white-space: nowrap !important;
         max-width: none !important;
@@ -1100,7 +1099,7 @@ function updatePasteGatePassVisibility() {
         return;
     }
 
-    if (excelRows.length > 0) {
+    if (excelRows.length) {
 
         section.classList.remove("hidden");
 
@@ -1590,7 +1589,6 @@ descriptions.push(
     return descriptions.join(" | ");
 
 }
-
 
 /* =====================================================
    PASTE PARSER
@@ -2653,17 +2651,64 @@ function makeSummary(
 
 /* =====================================================
    COPY VEHICLE SUMMARY
+   RICH TEXT + PLAIN TEXT
 ===================================================== */
 
-function getVehicleSummaryText(
+async function copyVehicleSummary(
     vehicle,
     summary
 ) {
 
-    return (
+    const vehicleBlocks =
+        document.querySelectorAll(
+            ".vehicle-block"
+        );
+
+    let matchedBlock = null;
+
+    vehicleBlocks.forEach(block => {
+
+        const title =
+            block.querySelector(
+                ".vehicle-title"
+            );
+
+        if (!title) {
+            return;
+        }
+
+        const titleText =
+            title.textContent
+                .replace(/\s+/g, " ")
+                .trim();
+
+        const expectedTitle =
+            "Vehicle: " +
+            vehicle;
+
+        if (
+            titleText === expectedTitle ||
+            titleText.includes(expectedTitle)
+        ) {
+
+            matchedBlock = block;
+
+        }
+
+    });
+
+
+    /* =================================================
+       PLAIN TEXT
+    ================================================= */
+
+    let plainText =
         "Vehicle: " +
         vehicle +
-        "\n" +
+        "\n\n\n";
+
+
+    plainText +=
         "Total Gatepass = " +
         formatNumber(
             summary.gatePass
@@ -2672,7 +2717,11 @@ function getVehicleSummaryText(
         formatNumber(
             summary.challan
         ) +
-        " pcs, Total QTY = " +
+        " pcs, Net Weight = " +
+        Number(
+            summary.netWeight
+        ).toFixed(2) +
+        ", Total QTY = " +
         formatNumber(
             summary.quantity
         ) +
@@ -2680,28 +2729,178 @@ function getVehicleSummaryText(
         formatNumber(
             summary.bagCtn
         ) +
-        " CTN's/Bag's"
-    );
+        " CTN's/Bag's" +
+        "\n\n" +
+        "Summary:";
 
-}
+
+    /* =================================================
+       HTML / RICH TEXT
+    ================================================= */
+
+    let htmlText =
+        "<strong>Vehicle: " +
+        escapeHtml(vehicle) +
+        "</strong>" +
+        "<br><br><br>";
 
 
-async function copyVehicleSummary(
-    vehicle,
-    summary
-) {
+    htmlText +=
+        "Total Gatepass = " +
+        formatNumber(
+            summary.gatePass
+        ) +
+        " pcs, Total Challan = " +
+        formatNumber(
+            summary.challan
+        ) +
+        " pcs, Net Weight = " +
+        Number(
+            summary.netWeight
+        ).toFixed(2) +
+        ", Total QTY = " +
+        formatNumber(
+            summary.quantity
+        ) +
+        " pcs/mtr/yrd, " +
+        formatNumber(
+            summary.bagCtn
+        ) +
+        " CTN's/Bag's" +
+        "<br><br>" +
+        "<strong>Summary:</strong>";
 
-    const text =
-        getVehicleSummaryText(
-            vehicle,
-            summary
-        );
+
+    /* =================================================
+       OGP + DESCRIPTION
+    ================================================= */
+
+    if (matchedBlock) {
+
+        const rows =
+            matchedBlock.querySelectorAll(
+                ".gate-row"
+            );
+
+
+        rows.forEach(row => {
+
+            const cells =
+                row.querySelectorAll("td");
+
+            if (cells.length < 7) {
+                return;
+            }
+
+
+            const ogp =
+                cells[0]
+                    .textContent
+                    .trim();
+
+
+            const description =
+                cells[6]
+                    .textContent
+                    .trim();
+
+
+            if (
+                !ogp ||
+                ogp === "Unknown"
+            ) {
+                return;
+            }
+
+
+            /* Plain text */
+
+            plainText +=
+                "\n" +
+                ogp;
+
+            if (description) {
+
+                plainText +=
+                    " " +
+                    description;
+
+            }
+
+
+            /* Rich text */
+
+            htmlText +=
+                "<br><strong>" +
+                escapeHtml(ogp) +
+                "</strong>";
+
+            if (description) {
+
+                htmlText +=
+                    " " +
+                    escapeHtml(
+                        description
+                    );
+
+            }
+
+        });
+
+    }
+
+
+    /* =================================================
+       COPY TO CLIPBOARD
+    ================================================= */
 
     try {
 
-        await navigator.clipboard.writeText(
-            text
-        );
+        if (
+            typeof ClipboardItem !==
+            "undefined" &&
+            navigator.clipboard &&
+            navigator.clipboard.write
+        ) {
+
+            const clipboardItem =
+                new ClipboardItem({
+
+                    "text/plain":
+                        new Blob(
+                            [plainText],
+                            {
+                                type:
+                                    "text/plain"
+                            }
+                        ),
+
+                    "text/html":
+                        new Blob(
+                            [htmlText],
+                            {
+                                type:
+                                    "text/html"
+                            }
+                        )
+
+                });
+
+
+            await navigator.clipboard.write([
+                clipboardItem
+            ]);
+
+        }
+
+        else {
+
+            throw new Error(
+                "Rich clipboard not supported."
+            );
+
+        }
+
 
         alert(
             "Vehicle summary copied."
@@ -2711,13 +2910,24 @@ async function copyVehicleSummary(
 
     catch(error) {
 
+        console.warn(
+            "Rich copy failed:",
+            error
+        );
+
+
+        /*
+         * Fallback:
+         * Plain text copy
+         */
+
         const textarea =
             document.createElement(
                 "textarea"
             );
 
         textarea.value =
-            text;
+            plainText;
 
         textarea.style.position =
             "fixed";
@@ -2725,19 +2935,40 @@ async function copyVehicleSummary(
         textarea.style.left =
             "-9999px";
 
+        textarea.style.top =
+            "0";
+
+        textarea.style.opacity =
+            "0";
+
         document.body.appendChild(
             textarea
         );
 
+        textarea.focus();
+
         textarea.select();
 
-        document.execCommand(
-            "copy"
-        );
+        try {
+
+            document.execCommand(
+                "copy"
+            );
+
+        }
+
+        catch(copyError) {
+
+            console.error(
+                copyError
+            );
+
+        }
 
         document.body.removeChild(
             textarea
         );
+
 
         alert(
             "Vehicle summary copied."
@@ -3055,20 +3286,12 @@ function renderVehicleWise(
     vehicleGroups.forEach(
         (rows, vehicle) => {
 
-            /* =============================================
-               VEHICLE TOTAL
-            ============================================= */
-
             const vehicleTotal =
                 makeSummary(
                     vehicle,
                     rows
                 );
-console.log("vehicleTotal", vehicleTotal)
 
-            /* =============================================
-               CUSTOMER GROUP
-            ============================================= */
 
             const customerGroups =
                 new Map();
@@ -3102,19 +3325,6 @@ console.log("vehicleTotal", vehicleTotal)
             });
 
 
-            /* =============================================
-               CUSTOMER NAME HEADER
-            ============================================= */
-
-            const customerNames =
-                [...customerGroups.keys()]
-                    .join(" | ");
-
-
-            /* =============================================
-               VEHICLE BLOCK
-            ============================================= */
-
             const block =
                 document.createElement(
                     "div"
@@ -3127,10 +3337,6 @@ console.log("vehicleTotal", vehicleTotal)
 
             let html = `
 
-                <!-- ======================================
-                     VEHICLE TITLE
-                ====================================== -->
-
                 <div class="vehicle-title rounded-t bg-[#174a7a] px-2.5 py-2 text-[15px] font-bold text-white">
 
                     Vehicle:
@@ -3138,12 +3344,6 @@ console.log("vehicleTotal", vehicleTotal)
 
                 </div>
 
-
-                
-
-                <!-- ======================================
-                     VEHICLE TOTAL
-                ====================================== -->
 
                 <div class="vehicle-total-summary flex items-center justify-between gap-2.5 border border-l-4 border-[#b8dfc8] border-l-[#198754] bg-[#eef8f2] px-2.5 py-2 text-[13px] font-bold leading-6 text-[#145c38]">
 
@@ -3160,6 +3360,11 @@ console.log("vehicleTotal", vehicleTotal)
                             vehicleTotal.challan
                         )}
                         pcs,
+
+                        Net Weight =
+                        ${Number(
+                            vehicleTotal.netWeight
+                        ).toFixed(2)},
 
                         Total QTY =
                         ${formatNumber(
@@ -3189,10 +3394,6 @@ console.log("vehicleTotal", vehicleTotal)
                 </div>
 
 
-                <!-- ======================================
-                     TABLE
-                ====================================== -->
-
                 <div class="w-full overflow-x-auto">
 
                     <table class="vehicle-table w-full border-collapse text-xs">
@@ -3202,8 +3403,7 @@ console.log("vehicleTotal", vehicleTotal)
                             <tr>
 
                                 <th>
-                                    # 
-
+                                    #
                                 </th>
 
                                 <th>
@@ -3239,16 +3439,8 @@ console.log("vehicleTotal", vehicleTotal)
             `;
 
 
-            /* =============================================
-               CUSTOMER WISE
-            ============================================= */
-
             customerGroups.forEach(
                 (customerRows, customer) => {
-
-                    /* =====================================
-                       CUSTOMER SUMMARY
-                    ===================================== */
 
                     const customerSummary =
                         makeSummary(
@@ -3256,12 +3448,6 @@ console.log("vehicleTotal", vehicleTotal)
                             customerRows
                         );
 
-
-                    /*
-                     * CUSTOMER ROW
-                     *
-                     * Description blank.
-                     */
 
                     html += `
 
@@ -3312,24 +3498,12 @@ console.log("vehicleTotal", vehicleTotal)
                     `;
 
 
-                    /* =====================================
-                       OGP GROUP
-                    ===================================== */
-
                     const gateGroups =
                         new Map();
 
 
                     customerRows.forEach(
                         row => {
-
-                            /*
-                             * IMPORTANT:
-                             * Keep the COMPLETE Gate Pass No.
-                             *
-                             * Example:
-                             * OGP-221226025966
-                             */
 
                             const gate =
                                 String(
@@ -3360,10 +3534,6 @@ console.log("vehicleTotal", vehicleTotal)
                     );
 
 
-                    /* =====================================
-                       EACH FULL OGP
-                    ===================================== */
-
                     gateGroups.forEach(
                         (gateRows, gate) => {
 
@@ -3374,26 +3544,15 @@ console.log("vehicleTotal", vehicleTotal)
                                 );
 
 
-                            /*
-                             * Combine all descriptions
-                             * belonging to this full OGP.
-                             */
-
                             const description =
                                 getCombinedDescription(
                                     gateRows
                                 );
-console.log("description===",description)
 
-                            /* =============================
-                               FULL OGP ROW
-                            ============================= */
 
                             html += `
 
                                 <tr class="gate-row">
-
-                                    <!-- FULL OGP / GATE PASS NO -->
 
                                     <td
                                         class="ogp-cell"
@@ -3406,15 +3565,11 @@ console.log("description===",description)
                                         )}
                                     </td>
 
-                                    <!-- GATEPASS COUNT -->
-
                                     <td>
                                         ${formatNumber(
                                             gateSummary.gatePass
                                         )}
                                     </td>
-
-                                    <!-- CHALLAN -->
 
                                     <td>
                                         ${formatNumber(
@@ -3422,15 +3577,11 @@ console.log("description===",description)
                                         )}
                                     </td>
 
-                                    <!-- QUANTITY -->
-
                                     <td>
                                         ${formatNumber(
                                             gateSummary.quantity
                                         )}
                                     </td>
-
-                                    <!-- NET WEIGHT -->
 
                                     <td>
                                         ${formatNumber(
@@ -3438,15 +3589,11 @@ console.log("description===",description)
                                         )}
                                     </td>
 
-                                    <!-- BAG / CTN -->
-
                                     <td>
                                         ${formatNumber(
                                             gateSummary.bagCtn
                                         )}
                                     </td>
-
-                                    <!-- DESCRIPTION -->
 
                                     <td
                                         class="description-cell"
