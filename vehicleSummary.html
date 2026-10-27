@@ -2651,31 +2651,23 @@ function makeSummary(
 
 /* =====================================================
    COPY VEHICLE SUMMARY
+   CUSTOMERS ABOVE SUMMARY
    RICH TEXT + PLAIN TEXT
 ===================================================== */
 
-async function copyVehicleSummary(
-    vehicle,
-    summary
-) {
+async function copyVehicleSummary(vehicle, summary) {
 
     const vehicleBlocks =
-        document.querySelectorAll(
-            ".vehicle-block"
-        );
+        document.querySelectorAll(".vehicle-block");
 
     let matchedBlock = null;
 
     vehicleBlocks.forEach(block => {
 
         const title =
-            block.querySelector(
-                ".vehicle-title"
-            );
+            block.querySelector(".vehicle-title");
 
-        if (!title) {
-            return;
-        }
+        if (!title) return;
 
         const titleText =
             title.textContent
@@ -2683,19 +2675,37 @@ async function copyVehicleSummary(
                 .trim();
 
         const expectedTitle =
-            "Vehicle: " +
-            vehicle;
+            "Vehicle: " + vehicle;
 
         if (
             titleText === expectedTitle ||
             titleText.includes(expectedTitle)
         ) {
-
             matchedBlock = block;
-
         }
 
     });
+
+    /* =================================================
+       CUSTOMER LIST
+    ================================================= */
+
+    const customers = matchedBlock
+        ? Array.from(
+            matchedBlock.querySelectorAll(
+                ".customer-row td:first-child"
+            )
+        )
+            .map(td => td.textContent.trim())
+            .filter(Boolean)
+        : [];
+
+    const customerArray =
+        [...new Set(customers)];
+
+    const customerText =
+        "Customers: " +
+        customerArray.join(", ");
 
 
     /* =================================================
@@ -2703,35 +2713,31 @@ async function copyVehicleSummary(
     ================================================= */
 
     let plainText =
-        "Vehicle: " +
-        vehicle +
-        "\n\n\n";
+    "Vehicle: " +
+    vehicle +
+    "\nDate: " +
+    formatGateOutDate(new Date()) +
+    "\n\n\n";
 
+    // Customers above summary
+    plainText +=
+        customerText +
+        "\n\n";
 
+    // Vehicle totals
     plainText +=
         "Total Gatepass = " +
-        formatNumber(
-            summary.gatePass
-        ) +
+        formatNumber(summary.gatePass) +
         " pcs, Total Challan = " +
-        formatNumber(
-            summary.challan
-        ) +
+        formatNumber(summary.challan) +
         " pcs, Net Weight = " +
-        Number(
-            summary.netWeight
-        ).toFixed(2) +
+        Number(summary.netWeight).toFixed(2) +
         ", Total QTY = " +
-        formatNumber(
-            summary.quantity
-        ) +
+        formatNumber(summary.quantity) +
         " pcs/mtr/yrd, " +
-        formatNumber(
-            summary.bagCtn
-        ) +
+        formatNumber(summary.bagCtn) +
         " CTN's/Bag's" +
-        "\n\n" +
-        "Summary:";
+        "\n\nSummary:";
 
 
     /* =================================================
@@ -2739,36 +2745,33 @@ async function copyVehicleSummary(
     ================================================= */
 
     let htmlText =
-        "<strong>Vehicle: " +
-        escapeHtml(vehicle) +
-        "</strong>" +
-        "<br><br><br>";
+    "<strong>Vehicle: " +
+    escapeHtml(vehicle) +
+    "</strong>" +
+    "<br>Date: " +
+    escapeHtml(formatGateOutDate(new Date())) +
+    "<br><br><br>";
 
+    // Customers above summary
+    htmlText +=
+        "<strong>Customers:</strong> " +
+        escapeHtml(customerArray.join(", ")) +
+        "<br><br>";
 
+    // Vehicle totals
     htmlText +=
         "Total Gatepass = " +
-        formatNumber(
-            summary.gatePass
-        ) +
+        formatNumber(summary.gatePass) +
         " pcs, Total Challan = " +
-        formatNumber(
-            summary.challan
-        ) +
+        formatNumber(summary.challan) +
         " pcs, Net Weight = " +
-        Number(
-            summary.netWeight
-        ).toFixed(2) +
+        Number(summary.netWeight).toFixed(2) +
         ", Total QTY = " +
-        formatNumber(
-            summary.quantity
-        ) +
+        formatNumber(summary.quantity) +
         " pcs/mtr/yrd, " +
-        formatNumber(
-            summary.bagCtn
-        ) +
+        formatNumber(summary.bagCtn) +
         " CTN's/Bag's" +
-        "<br><br>" +
-        "<strong>Summary:</strong>";
+        "<br><br><strong>Summary:</strong>";
 
 
     /* =================================================
@@ -2782,28 +2785,18 @@ async function copyVehicleSummary(
                 ".gate-row"
             );
 
-
         rows.forEach(row => {
 
             const cells =
                 row.querySelectorAll("td");
 
-            if (cells.length < 7) {
-                return;
-            }
-
+            if (cells.length < 7) return;
 
             const ogp =
-                cells[0]
-                    .textContent
-                    .trim();
-
+                cells[0].textContent.trim();
 
             const description =
-                cells[6]
-                    .textContent
-                    .trim();
-
+                cells[6].textContent.trim();
 
             if (
                 !ogp ||
@@ -2812,37 +2805,23 @@ async function copyVehicleSummary(
                 return;
             }
 
-
-            /* Plain text */
-
-            plainText +=
-                "\n" +
-                ogp;
+            // Plain text
+            plainText += "\n" + ogp;
 
             if (description) {
-
-                plainText +=
-                    " " +
-                    description;
-
+                plainText += " " + description;
             }
 
-
-            /* Rich text */
-
+            // Rich text
             htmlText +=
                 "<br><strong>" +
                 escapeHtml(ogp) +
                 "</strong>";
 
             if (description) {
-
                 htmlText +=
                     " " +
-                    escapeHtml(
-                        description
-                    );
-
+                    escapeHtml(description);
             }
 
         });
@@ -2857,8 +2836,7 @@ async function copyVehicleSummary(
     try {
 
         if (
-            typeof ClipboardItem !==
-            "undefined" &&
+            typeof ClipboardItem !== "undefined" &&
             navigator.clipboard &&
             navigator.clipboard.write
         ) {
@@ -2870,8 +2848,7 @@ async function copyVehicleSummary(
                         new Blob(
                             [plainText],
                             {
-                                type:
-                                    "text/plain"
+                                type: "text/plain"
                             }
                         ),
 
@@ -2879,13 +2856,11 @@ async function copyVehicleSummary(
                         new Blob(
                             [htmlText],
                             {
-                                type:
-                                    "text/html"
+                                type: "text/html"
                             }
                         )
 
                 });
-
 
             await navigator.clipboard.write([
                 clipboardItem
@@ -2901,10 +2876,7 @@ async function copyVehicleSummary(
 
         }
 
-
-        alert(
-            "Vehicle summary copied."
-        );
+        alert("Vehicle summary copied.");
 
     }
 
@@ -2915,70 +2887,41 @@ async function copyVehicleSummary(
             error
         );
 
-
-        /*
-         * Fallback:
-         * Plain text copy
-         */
-
+        // Plain text fallback
         const textarea =
-            document.createElement(
-                "textarea"
-            );
+            document.createElement("textarea");
 
-        textarea.value =
-            plainText;
+        textarea.value = plainText;
 
-        textarea.style.position =
-            "fixed";
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        textarea.style.top = "0";
+        textarea.style.opacity = "0";
 
-        textarea.style.left =
-            "-9999px";
-
-        textarea.style.top =
-            "0";
-
-        textarea.style.opacity =
-            "0";
-
-        document.body.appendChild(
-            textarea
-        );
+        document.body.appendChild(textarea);
 
         textarea.focus();
-
         textarea.select();
 
         try {
 
-            document.execCommand(
-                "copy"
-            );
+            document.execCommand("copy");
 
         }
 
         catch(copyError) {
 
-            console.error(
-                copyError
-            );
+            console.error(copyError);
 
         }
 
-        document.body.removeChild(
-            textarea
-        );
+        document.body.removeChild(textarea);
 
-
-        alert(
-            "Vehicle summary copied."
-        );
+        alert("Vehicle summary copied.");
 
     }
 
 }
-
-
 /* =====================================================
    GENERATE REPORT
 ===================================================== */
